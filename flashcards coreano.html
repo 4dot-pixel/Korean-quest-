@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>한국어 RPG — Korean Quest</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0a0a12;--bg2:#0f0e1a;--surface:#13121f;--surface2:#1a1830;
+  --card-front:#1a1830;--card-back:#121d2e;
+  --accent:#c084fc;--accent-glow:rgba(192,132,252,0.3);
+  --accent2:#fbbf24;--accent2-glow:rgba(251,191,36,0.3);
+  --accent3:#34d399;--accent3-glow:rgba(52,211,153,0.25);
+  --accent4:#60a5fa;--accent4-glow:rgba(96,165,250,0.2);
+  --danger:#f87171;--text:#f0eeff;--muted:#7c7a9c;
+  --border:rgba(192,132,252,0.12);--border2:rgba(255,255,255,0.06);
+  --scanline:rgba(0,0,0,0.15);
+  --exp-day-color:#fbbf24;--exp-total-color:#c084fc;
+}
+body.theme-fire{--accent:#ff6b35;--accent-glow:rgba(255,107,53,0.3);--accent2:#ffd166;--exp-day-color:#ff6b35;--exp-total-color:#ff9f1c;--border:rgba(255,107,53,0.15);}
+body.theme-ocean{--accent:#06d6a0;--accent-glow:rgba(6,214,160,0.3);--accent2:#74b9ff;--exp-day-color:#06d6a0;--exp-total-color:#74b9ff;--border:rgba(6,214,160,0.15);}
+body.theme-sakura{--accent:#fb7185;--accent-glow:rgba(251,113,133,0.3);--accent2:#f9a8d4;--exp-day-color:#fb7185;--exp-total-color:#e879f9;--border:rgba(251,113,133,0.15);--bg:#120a10;--bg2:#180e16;--surface:#1e1028;}
+body.theme-gold{--accent:#fbbf24;--accent-glow:rgba(251,191,36,0.35);--accent2:#f59e0b;--exp-day-color:#fbbf24;--exp-total-color:#f59e0b;--border:rgba(251,191,36,0.18);--bg:#0f0c00;--bg2:#141000;--surface:#1a1500;}
+body.theme-cyber{--accent:#00fff5;--accent-glow:rgba(0,255,245,0.25);--accent2:#ff00a0;--exp-day-color:#00fff5;--exp-total-color:#ff00a0;--border:rgba(0,255,245,0.15);--bg:#000a0f;--bg2:#001219;--surface:#001a24;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;background:repeating-linear-gradient(0deg,var(--scanline) 0px,transparent 1px,transparent 3px);}
+body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:16px 14px 80px;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--border2) 1px,transparent 1px),linear-gradient(90deg,var(--border2) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;mask-image:radial-gradient(ellipse at center,black 20%,transparent 80%);}
+.orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(80px);opacity:0.25;}
+.orb1{width:400px;height:400px;background:var(--accent);top:-100px;right:-100px;animation:drift1 12s ease-in-out infinite;}
+.orb2{width:300px;height:300px;background:var(--accent3);bottom:-80px;left:-80px;animation:drift2 15s ease-in-out infinite;}
+@keyframes drift1{0%,100%{transform:translate(0,0);}50%{transform:translate(-30px,40px);}}
+@keyframes drift2{0%,100%{transform:translate(0,0);}50%{transform:translate(40px,-30px);}}
+.wrapper{position:relative;z-index:1;width:100%;max-width:520px;}
+.game-header{text-align:center;margin-bottom:18px;}
+.game-title-sub{font-size:9px;letter-spacing:0.4em;color:var(--accent);text-transform:uppercase;margin-bottom:5px;text-shadow:0 0 10px var(--accent-glow);}
+.game-title{font-family:'DM Serif Display',serif;font-size:28px;font-weight:400;line-height:1;margin-bottom:3px;background:linear-gradient(135deg,var(--text),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 20px var(--accent-glow));}
+.game-title em{font-style:italic;}
+.game-subtitle{font-size:9px;color:var(--muted);letter-spacing:0.15em;}
+.player-bar{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:12px;position:relative;overflow:hidden;}
+.player-bar::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,var(--accent-glow),transparent);opacity:0.3;}
+.player-avatar{width:40px;height:40px;border-radius:6px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;box-shadow:0 0 14px var(--accent-glow);}
+.player-info{flex:1;}
+.player-name{font-size:11px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.player-level-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.player-level{font-size:9px;color:var(--accent);}
+.player-xp-text{font-size:8px;color:var(--muted);}
+.mini-bar{height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;}
+.mini-fill{height:100%;border-radius:3px;transition:width 0.8s cubic-bezier(0.4,0,0.2,1);background:linear-gradient(90deg,var(--accent),var(--accent2));}
+.exp-section{margin-bottom:12px;display:flex;flex-direction:column;gap:7px;}
+.exp-bar-wrap{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;}
+.exp-label-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.exp-label{font-size:9px;letter-spacing:0.12em;text-transform:uppercase;}
+.exp-label.day{color:var(--exp-day-color);text-shadow:0 0 8px var(--exp-day-color);}
+.exp-label.total{color:var(--exp-total-color);text-shadow:0 0 8px var(--exp-total-color);}
+.exp-val{font-size:9px;color:var(--muted);}
+.exp-track{height:12px;background:rgba(0,0,0,0.4);border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,0.06);position:relative;}
+.exp-track::before{content:'';position:absolute;inset:0;z-index:1;background:repeating-linear-gradient(90deg,transparent,transparent calc(10% - 1px),rgba(0,0,0,0.3) calc(10% - 1px),rgba(0,0,0,0.3) 10%);pointer-events:none;}
+.exp-fill{height:100%;border-radius:6px;position:relative;transition:width 0.9s cubic-bezier(0.4,0,0.2,1);}
+.exp-fill.day-fill{background:linear-gradient(90deg,var(--accent2),var(--exp-day-color));}
+.exp-fill.total-fill{background:linear-gradient(90deg,var(--accent),var(--exp-total-color));}
+.exp-fill::after{content:'';position:absolute;top:0;left:0;right:0;height:50%;background:rgba(255,255,255,0.15);border-radius:6px 6px 0 0;}
+.exp-shine{position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);animation:shine 2.5s ease-in-out infinite;}
+@keyframes shine{0%{left:-100%;}60%,100%{left:150%;}}
+.tabs{display:flex;gap:4px;margin-bottom:14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:4px;}
+.tab{flex:1;padding:7px 2px;border:none;border-radius:6px;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;background:transparent;color:var(--muted);transition:all 0.2s;line-height:1.3;}
+.tab.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;font-weight:700;box-shadow:0 0 12px var(--accent-glow);}
+.tab-icon{display:block;font-size:12px;margin-bottom:1px;}
+.panel{display:none;}.panel.active{display:block;}
+.session-stats{display:flex;gap:6px;margin-bottom:12px;}
+.s-stat{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 4px;text-align:center;position:relative;overflow:hidden;}
+.s-stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));}
+.s-stat-num{font-family:'DM Serif Display',serif;font-size:18px;line-height:1;margin-bottom:2px;}
+.s-stat-num.blue{color:var(--accent4);}.s-stat-num.yellow{color:var(--accent2);}.s-stat-num.green{color:var(--accent3);}.s-stat-num.red{color:var(--danger);}
+.s-stat-label{font-size:7px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;}
+.tap-hint{display:flex;align-items:center;justify-content:center;gap:6px;font-size:9px;color:rgba(167,169,190,0.4);margin-bottom:10px;letter-spacing:0.1em;}
+.tap-hint span{animation:pulse 1.8s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:0.2;transform:scale(1);}50%{opacity:0.8;transform:scale(1.1);}}
+.next-rev{font-size:9px;color:var(--accent4);text-align:center;margin-bottom:10px;min-height:14px;letter-spacing:0.08em;}
+.scene{width:100%;height:265px;perspective:1200px;margin-bottom:12px;cursor:pointer;}
+.card{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform 0.6s cubic-bezier(0.4,0,0.2,1);}
+.card.flipped{transform:rotateY(180deg);}
+.card-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;border:1px solid var(--border);}
+.card-front{background:linear-gradient(145deg,var(--surface2),var(--surface));box-shadow:0 0 0 1px var(--border),0 0 30px var(--accent-glow),0 20px 60px rgba(0,0,0,0.6);}
+.card-back{background:linear-gradient(145deg,#0e1e2e,#131d30);transform:rotateY(180deg);box-shadow:0 0 0 1px var(--border),0 0 30px var(--accent3-glow),0 20px 60px rgba(0,0,0,0.6);}
+.card-face::before,.card-face::after{content:'';position:absolute;width:12px;height:12px;border-color:var(--accent);border-style:solid;opacity:0.5;}
+.card-face::before{top:8px;left:8px;border-width:2px 0 0 2px;}
+.card-face::after{bottom:8px;right:8px;border-width:0 2px 2px 0;}
+.srs-pill{position:absolute;top:12px;right:12px;font-size:8px;padding:3px 8px;border-radius:4px;letter-spacing:0.05em;font-weight:700;}
+.srs-new{background:rgba(96,165,250,0.15);color:var(--accent4);border:1px solid rgba(96,165,250,0.3);}
+.srs-learning{background:rgba(251,191,36,0.15);color:var(--accent2);border:1px solid rgba(251,191,36,0.3);}
+.srs-review{background:rgba(52,211,153,0.15);color:var(--accent3);border:1px solid rgba(52,211,153,0.3);}
+.srs-mastered{background:rgba(192,132,252,0.15);color:var(--accent);border:1px solid rgba(192,132,252,0.3);}
+.card-cat{font-size:8px;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:10px;padding:3px 10px;border-radius:4px;border:1px solid;}
+.cat-0{color:#f87171;background:rgba(248,113,113,0.08);border-color:rgba(248,113,113,0.2);}
+.cat-1{color:#fbbf24;background:rgba(251,191,36,0.08);border-color:rgba(251,191,36,0.2);}
+.cat-2{color:#34d399;background:rgba(52,211,153,0.08);border-color:rgba(52,211,153,0.2);}
+.cat-3{color:#60a5fa;background:rgba(96,165,250,0.08);border-color:rgba(96,165,250,0.2);}
+.cat-4{color:#a78bfa;background:rgba(167,139,250,0.08);border-color:rgba(167,139,250,0.2);}
+.cat-5{color:#f472b6;background:rgba(244,114,182,0.08);border-color:rgba(244,114,182,0.2);}
+.card-korean{font-family:'Noto Sans KR',sans-serif;font-size:48px;font-weight:700;line-height:1;text-align:center;margin-bottom:8px;text-shadow:0 0 20px var(--accent-glow),0 0 40px var(--accent-glow);}
+.card-roman{font-size:12px;color:var(--muted);letter-spacing:0.08em;}
+.card-hint-text{font-size:9px;color:rgba(167,169,190,0.3);margin-top:14px;letter-spacing:0.1em;}
+.card-spanish{font-family:'DM Serif Display',serif;font-size:32px;font-style:italic;color:var(--accent2);text-align:center;margin-bottom:8px;line-height:1.2;text-shadow:0 0 20px var(--accent2-glow);}
+.card-example{font-size:11px;color:var(--muted);text-align:center;line-height:1.7;max-width:340px;}
+.card-example .kr-ex{font-family:'Noto Sans KR',sans-serif;color:var(--accent3);font-size:13px;display:block;margin-bottom:2px;}
+.rate-btns{display:flex;gap:6px;margin-bottom:8px;}
+.rbtn{flex:1;padding:10px 3px;border:none;border-radius:8px;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:0.05em;text-transform:uppercase;cursor:pointer;transition:all 0.2s;line-height:1.4;}
+.rbtn:active{transform:scale(0.95);}
+.rbtn:hover{filter:brightness(1.2);}
+.rbtn .iv{display:block;font-size:7px;opacity:0.6;margin-top:1px;}
+.rb-again{background:rgba(248,113,113,0.12);color:var(--danger);border:1px solid rgba(248,113,113,0.3);}
+.rb-hard{background:rgba(251,191,36,0.12);color:var(--accent2);border:1px solid rgba(251,191,36,0.3);}
+.rb-good{background:rgba(52,211,153,0.12);color:var(--accent3);border:1px solid rgba(52,211,153,0.3);}
+.rb-easy{background:rgba(192,132,252,0.12);color:var(--accent);border:1px solid rgba(192,132,252,0.3);}
+.dots{display:flex;justify-content:center;gap:4px;flex-wrap:wrap;margin-top:10px;}
+.dot{width:5px;height:5px;border-radius:2px;background:var(--border2);transition:all 0.3s;}
+.dot.current{background:var(--accent2);transform:scale(1.5);box-shadow:0 0 4px var(--accent2);}
+.dot.again{background:var(--danger);}.dot.hard{background:var(--accent2);}.dot.good{background:var(--accent3);}.dot.easy{background:var(--accent);}
+.skip-btn{width:100%;padding:9px;background:transparent;color:var(--muted);border:1px solid var(--border2);border-radius:8px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.1em;cursor:pointer;text-transform:uppercase;margin-bottom:6px;transition:all 0.2s;}
+.skip-btn:hover{border-color:var(--border);color:var(--text);}
+.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-100px);font-size:11px;padding:12px 18px;border-radius:8px;z-index:9998;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);text-align:center;max-width:300px;letter-spacing:0.04em;border:1px solid;box-shadow:0 8px 32px rgba(0,0,0,0.6);}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast strong{font-family:'Noto Sans KR',sans-serif;font-size:15px;display:block;margin-bottom:2px;}
+.toast-unlock{background:#0d2b1e;border-color:rgba(52,211,153,0.5);color:var(--accent3);}
+.toast-test{background:#1a0d2b;border-color:rgba(192,132,252,0.5);color:var(--accent);}
+.toast-lvl{background:#1a1200;border-color:rgba(251,191,36,0.5);color:var(--accent2);}
+.results{display:none;text-align:center;padding:24px 18px;background:var(--surface);border:1px solid var(--border);border-radius:12px;position:relative;overflow:hidden;}
+.results::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2),var(--accent3));}
+.results.show{display:block;}
+.results-emoji{font-size:48px;margin-bottom:8px;}
+.results-title{font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:4px;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.results-score{font-size:36px;font-family:'DM Serif Display',serif;color:var(--accent2);margin-bottom:4px;}
+.results-sub{font-size:10px;color:var(--muted);margin-bottom:10px;}
+.results-note{font-size:10px;color:var(--accent4);background:rgba(96,165,250,0.06);border:1px solid rgba(96,165,250,0.2);border-radius:8px;padding:10px 14px;margin-bottom:10px;line-height:1.8;white-space:pre-line;text-align:left;}
+.next-session-box{background:linear-gradient(135deg,rgba(192,132,252,0.06),rgba(251,191,36,0.04));border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:10px;text-align:left;}
+.nsr-title{font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;}
+.nsr-item{display:flex;align-items:center;gap:10px;font-size:10px;color:var(--text);margin-bottom:5px;padding:5px 8px;background:rgba(255,255,255,0.02);border-radius:5px;}
+.nsr-time{font-size:11px;color:var(--accent2);font-weight:700;min-width:55px;}
+.nsr-desc{color:var(--muted);font-size:9px;}
+.missions-header{font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.mission-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px;position:relative;overflow:hidden;transition:border-color 0.3s;}
+.mission-card.complete{border-color:var(--accent3);opacity:0.7;}
+.mission-card.locked{opacity:0.35;}
+.mission-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:linear-gradient(180deg,var(--accent),var(--accent2));}
+.mission-card.complete::before{background:var(--accent3);}
+.mission-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
+.mission-name{font-size:11px;font-weight:700;color:var(--text);}
+.mission-xp{font-size:9px;color:var(--accent2);background:rgba(251,191,36,0.1);padding:2px 8px;border-radius:4px;border:1px solid rgba(251,191,36,0.2);}
+.mission-desc{font-size:9px;color:var(--muted);margin-bottom:8px;line-height:1.5;}
+.mission-bar-wrap{height:5px;background:rgba(0,0,0,0.4);border-radius:4px;overflow:hidden;}
+.mission-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width 0.6s;}
+.mission-card.complete .mission-bar-fill{background:var(--accent3);}
+.mission-progress-text{font-size:8px;color:var(--muted);margin-top:4px;text-align:right;}
+.mission-badge{position:absolute;top:10px;right:10px;font-size:15px;}
+.test-available{background:linear-gradient(135deg,rgba(192,132,252,0.1),rgba(251,191,36,0.06));border:1px solid var(--border);border-radius:10px;padding:18px;text-align:center;margin-bottom:12px;}
+.test-available-title{font-family:'DM Serif Display',serif;font-size:18px;margin-bottom:5px;color:var(--accent);}
+.test-available-desc{font-size:10px;color:var(--muted);margin-bottom:12px;line-height:1.6;}
+.test-q{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:10px;text-align:center;}
+.test-q-num{font-size:9px;color:var(--muted);letter-spacing:0.15em;margin-bottom:10px;}
+.test-q-word{font-family:'Noto Sans KR',sans-serif;font-size:42px;font-weight:700;color:var(--text);margin-bottom:5px;text-shadow:0 0 20px var(--accent-glow);}
+.test-q-sub{font-size:10px;color:var(--muted);margin-bottom:12px;}
+.test-options{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.test-opt{padding:11px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:'DM Mono',monospace;font-size:10px;text-align:center;cursor:pointer;transition:all 0.2s;color:var(--text);}
+.test-opt:hover{border-color:var(--accent);background:rgba(192,132,252,0.08);}
+.test-opt.correct{border-color:var(--accent3);background:rgba(52,211,153,0.12);color:var(--accent3);}
+.test-opt.wrong{border-color:var(--danger);background:rgba(248,113,113,0.12);color:var(--danger);}
+.test-result{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:22px;text-align:center;display:none;}
+.test-result.show{display:block;}
+.test-result-score{font-family:'DM Serif Display',serif;font-size:34px;color:var(--accent2);margin-bottom:6px;}
+.test-result-msg{font-size:11px;color:var(--muted);margin-bottom:14px;}
+.test-reward{background:linear-gradient(135deg,rgba(192,132,252,0.1),rgba(251,191,36,0.1));border:1px solid var(--border);border-radius:8px;padding:11px;margin-bottom:14px;font-size:10px;color:var(--accent);line-height:1.7;}
+.ov-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.ov-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;position:relative;overflow:hidden;}
+.ov-card::before{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;}
+.ov-card:nth-child(1)::before{background:var(--accent4);}
+.ov-card:nth-child(2)::before{background:var(--accent);}
+.ov-card:nth-child(3)::before{background:var(--accent2);}
+.ov-card:nth-child(4)::before{background:var(--accent3);}
+.ov-num{font-family:'DM Serif Display',serif;font-size:26px;margin-bottom:2px;}
+.ov-label{font-size:8px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;}
+.global-bar-wrap{margin-bottom:12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:11px 14px;}
+.global-bar{height:14px;background:rgba(0,0,0,0.4);border-radius:8px;overflow:hidden;display:flex;border:1px solid rgba(255,255,255,0.04);}
+.gb-mastered{background:linear-gradient(90deg,var(--accent3),var(--accent));transition:width 0.6s;}
+.gb-active{background:linear-gradient(90deg,var(--accent2),rgba(251,191,36,0.5));transition:width 0.6s;}
+.gb-locked{background:rgba(255,255,255,0.03);flex:1;}
+.global-bar-legend{display:flex;gap:12px;margin-top:7px;justify-content:center;}
+.gb-leg{font-size:8px;color:var(--muted);display:flex;align-items:center;gap:4px;}
+.gb-leg::before{content:'';width:8px;height:8px;border-radius:2px;}
+.gb-leg.m::before{background:var(--accent3);}.gb-leg.a::before{background:var(--accent2);}.gb-leg.l::before{background:rgba(255,255,255,0.1);}
+.queue-list{display:flex;flex-direction:column;gap:6px;}
+.qi{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;}
+.qi-kr{font-family:'Noto Sans KR',sans-serif;font-size:18px;font-weight:700;min-width:48px;}
+.qi-info{flex:1;}.qi-es{font-size:11px;color:var(--text);margin-bottom:1px;}.qi-meta{font-size:9px;color:var(--muted);}
+.qi-badge{font-size:8px;padding:2px 7px;border-radius:4px;}.qi-locked{opacity:0.3;}
+.themes-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+.theme-btn{border:2px solid var(--border2);border-radius:8px;padding:11px 8px;cursor:pointer;background:var(--surface);text-align:center;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:0.06em;text-transform:uppercase;transition:all 0.2s;}
+.theme-btn:hover,.theme-btn.active-theme{border-color:var(--accent);box-shadow:0 0 10px var(--accent-glow);}
+.theme-btn.locked-theme{opacity:0.4;cursor:not-allowed;}
+.theme-preview{width:100%;height:26px;border-radius:4px;margin-bottom:5px;}
+.theme-lock-msg{font-size:9px;color:var(--accent);text-align:center;margin-bottom:12px;line-height:1.5;}
+.action-btn{width:100%;padding:11px;border:1px solid var(--border);border-radius:8px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;cursor:pointer;text-transform:uppercase;transition:all 0.2s;margin-bottom:8px;background:transparent;color:var(--muted);}
+.action-btn:hover{border-color:var(--accent);color:var(--text);}
+.action-btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;font-weight:700;border:none;box-shadow:0 4px 20px var(--accent-glow);}
+.action-btn.primary:hover{filter:brightness(1.1);}
+.all-list{display:flex;flex-direction:column;gap:6px;}
+.sec-title{font-size:8px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin:12px 0 8px;display:flex;align-items:center;gap:8px;}
+.sec-title::after{content:'';flex:1;height:1px;background:var(--border2);}
+.xp-pop{position:fixed;font-size:14px;font-weight:700;color:var(--accent2);pointer-events:none;z-index:9999;font-family:'DM Mono',monospace;text-shadow:0 0 10px var(--accent2-glow);animation:xpFly 1.2s ease-out forwards;}
+@keyframes xpFly{0%{opacity:1;transform:translateY(0) scale(1);}100%{opacity:0;transform:translateY(-60px) scale(0.7);}}
+/* ═══ MINIGAMES CSS ═══ */
+.mg-hub{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.mg-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 12px;cursor:pointer;text-align:center;transition:all 0.2s;position:relative;overflow:hidden;}
+.mg-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));}
+.mg-card:hover{border-color:var(--accent);box-shadow:0 0 16px var(--accent-glow);}
+.mg-icon{font-size:28px;margin-bottom:6px;}.mg-name{font-size:10px;font-weight:700;color:var(--text);margin-bottom:3px;}.mg-desc{font-size:8px;color:var(--muted);line-height:1.4;}
+.mg-screen{display:none;}.mg-screen.active{display:block;}
+.mg-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.mg-back{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:6px 12px;font-family:'DM Mono',monospace;font-size:9px;cursor:pointer;letter-spacing:0.1em;text-transform:uppercase;transition:all 0.2s;}
+.mg-back:hover{border-color:var(--accent);color:var(--text);}
+.mg-game-title{font-family:'DM Serif Display',serif;font-size:16px;flex:1;}
+.mg-score-row{display:flex;gap:8px;margin-bottom:12px;}
+.mg-score-pill{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 12px;font-size:10px;flex:1;text-align:center;}
+.mg-score-pill span{color:var(--accent2);font-weight:700;}.mg-score-pill.timer span{color:var(--danger);}
+.wg-word{font-family:'Noto Sans KR',sans-serif;font-size:52px;font-weight:700;text-align:center;margin-bottom:6px;text-shadow:0 0 20px var(--accent-glow);}
+.wg-hint{font-size:12px;color:var(--muted);text-align:center;margin-bottom:16px;}
+.wg-input{width:100%;padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:'DM Mono',monospace;font-size:14px;color:var(--text);text-align:center;letter-spacing:0.1em;outline:none;transition:border-color 0.2s;margin-bottom:10px;}
+.wg-input:focus{border-color:var(--accent);box-shadow:0 0 10px var(--accent-glow);}
+.wg-input.correct{border-color:var(--accent3);background:rgba(52,211,153,0.08);}
+.wg-input.wrong{border-color:var(--danger);background:rgba(248,113,113,0.08);}
+.wg-feedback{font-size:11px;text-align:center;min-height:20px;margin-bottom:8px;}
+.wg-feedback.ok{color:var(--accent3);}.wg-feedback.err{color:var(--danger);}
+.mem-grid{display:grid;gap:8px;margin-bottom:12px;}
+.mem-grid.sz-8{grid-template-columns:repeat(4,1fr);}.mem-grid.sz-12{grid-template-columns:repeat(4,1fr);}.mem-grid.sz-16{grid-template-columns:repeat(4,1fr);}
+.mem-card{height:68px;border-radius:8px;cursor:pointer;position:relative;transform-style:preserve-3d;transition:transform 0.4s;border:1px solid var(--border);}
+.mem-card.flipped,.mem-card.matched{transform:rotateY(180deg);}.mem-card.matched{cursor:default;}
+.mem-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:4px;}
+.mem-front{background:var(--surface2);}.mem-front::after{content:'?';font-size:22px;color:var(--muted);}
+.mem-back{background:var(--surface);transform:rotateY(180deg);font-size:11px;text-align:center;line-height:1.3;color:var(--text);}
+.mem-back.kr{font-family:'Noto Sans KR',sans-serif;font-size:18px;font-weight:700;color:var(--accent2);}
+.mem-card.matched .mem-back{background:rgba(52,211,153,0.12);border:1px solid var(--accent3);color:var(--accent3);}
+.sp-word-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:24px;text-align:center;margin-bottom:12px;}
+.sp-korean{font-family:'Noto Sans KR',sans-serif;font-size:44px;font-weight:700;margin-bottom:4px;text-shadow:0 0 20px var(--accent-glow);}
+.sp-roman{font-size:12px;color:var(--muted);}
+.sp-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.sp-opt{padding:13px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:'DM Mono',monospace;font-size:10px;text-align:center;cursor:pointer;transition:all 0.15s;color:var(--text);}
+.sp-opt:hover{border-color:var(--accent);}.sp-opt.correct{border-color:var(--accent3);background:rgba(52,211,153,0.12);color:var(--accent3);}
+.sp-opt.wrong{border-color:var(--danger);background:rgba(248,113,113,0.12);color:var(--danger);}
+.sp-timer-bar{height:4px;background:var(--border2);border-radius:2px;overflow:hidden;margin-bottom:10px;}
+.sp-timer-fill{height:100%;background:linear-gradient(90deg,var(--accent3),var(--accent2));border-radius:2px;transition:width 0.1s linear;}
+.pb-translate{font-size:12px;color:var(--muted);text-align:center;margin-bottom:10px;font-style:italic;padding:8px;background:var(--surface);border-radius:6px;border:1px solid var(--border);}
+.pb-target{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:10px;min-height:52px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;}
+.pb-target-hint{font-size:10px;color:rgba(167,169,190,0.3);}
+.pb-slot{background:rgba(192,132,252,0.1);border:1px dashed var(--accent);border-radius:6px;padding:6px 12px;font-family:'Noto Sans KR',sans-serif;font-size:14px;color:var(--accent);cursor:pointer;}
+.pb-words{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;min-height:44px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;}
+.pb-word{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 12px;font-family:'Noto Sans KR',sans-serif;font-size:14px;color:var(--text);cursor:pointer;transition:all 0.2s;}
+.pb-word:hover{border-color:var(--accent);color:var(--accent);}.pb-word.used{opacity:0.2;cursor:default;pointer-events:none;}
+.pb-feedback{text-align:center;font-size:11px;min-height:18px;margin-bottom:8px;}
+.dc-listen-btn{width:100%;padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:10px;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:12px;transition:all 0.2s;}
+.dc-listen-btn:hover{border-color:var(--accent);box-shadow:0 0 16px var(--accent-glow);}
+.dc-speaker{font-size:36px;}.dc-speaker.playing{filter:drop-shadow(0 0 8px var(--accent));}
+.dc-listen-label{font-size:11px;color:var(--muted);}
+.dc-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.dc-opt{padding:12px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-family:'Noto Sans KR',sans-serif;font-size:16px;font-weight:700;text-align:center;cursor:pointer;transition:all 0.2s;color:var(--text);}
+.dc-opt:hover{border-color:var(--accent);}.dc-opt.correct{border-color:var(--accent3);background:rgba(52,211,153,0.12);color:var(--accent3);}
+.dc-opt.wrong{border-color:var(--danger);background:rgba(248,113,113,0.12);color:var(--danger);}
+.dc-no-tts{text-align:center;padding:24px;color:var(--muted);font-size:10px;line-height:1.7;}
+.gameover{text-align:center;padding:28px 16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;position:relative;overflow:hidden;}
+.gameover::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2),var(--accent3));}
+.go-emoji{font-size:48px;margin-bottom:10px;}.go-title{font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:6px;}
+.go-score{font-family:'DM Serif Display',serif;font-size:38px;color:var(--accent2);margin-bottom:4px;}
+.go-sub{font-size:10px;color:var(--muted);margin-bottom:16px;}
+.go-xp{font-size:12px;color:var(--accent3);margin-bottom:16px;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);border-radius:8px;padding:8px;}
+.diff-row{display:flex;gap:6px;margin-bottom:12px;}
+.diff-btn{flex:1;padding:7px;border:1px solid var(--border);border-radius:6px;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;background:transparent;color:var(--muted);transition:all 0.2s;}
+.diff-btn.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;font-weight:700;border:none;}
+
+
+/* ═══ SAVE / LOAD CSS ═══ */
+.save-box{background:linear-gradient(135deg,rgba(52,211,153,0.06),rgba(96,165,250,0.06));border:1px solid rgba(52,211,153,0.25);border-radius:10px;padding:16px;margin-bottom:12px;}
+.save-box-title{font-size:11px;font-weight:700;color:var(--accent3);letter-spacing:0.08em;margin-bottom:6px;}
+.save-box-desc{font-size:9px;color:var(--muted);line-height:1.5;margin-bottom:12px;}
+.save-btn-row{display:flex;gap:8px;}
+.save-btn{flex:1;padding:11px 8px;border-radius:8px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;transition:all 0.2s;text-align:center;font-weight:700;}
+.export-btn{background:linear-gradient(135deg,var(--accent3),var(--accent4));color:#000;border:none;box-shadow:0 4px 14px rgba(52,211,153,0.3);}
+.export-btn:hover{filter:brightness(1.1);}
+.import-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;border:none;box-shadow:0 4px 14px var(--accent-glow);display:flex;align-items:center;justify-content:center;}
+.import-btn:hover{filter:brightness(1.1);}
+.save-feedback{font-size:10px;text-align:center;min-height:18px;margin-top:8px;transition:all 0.3s;}
+.save-feedback.ok{color:var(--accent3);}
+.save-feedback.err{color:var(--danger);}
+
+</style>
+</head>
+<body>
+<div class="orb orb1"></div><div class="orb orb2"></div>
+<div class="toast toast-unlock" id="toast-unlock"><strong id="tu-word"></strong><span id="tu-msg"></span></div>
+<div class="toast toast-test" id="toast-test"><strong>⚔️ ¡TEST DISPONIBLE!</strong><span id="tt-msg"></span></div>
+<div class="toast toast-lvl" id="toast-lvl"><strong id="tl-msg"></strong><span id="tl-sub"></span></div>
+<div class="wrapper">
+<div class="game-header">
+  <div class="game-title-sub">⚔ Korean Quest ⚔</div>
+  <div class="game-title">한국어 <em>RPG</em></div>
+  <div class="game-subtitle">300 palabras · misiones · desbloqueo progresivo</div>
+</div>
+<div class="player-bar">
+  <div class="player-avatar" id="player-avatar">🧙</div>
+  <div class="player-info">
+    <div class="player-name" id="player-name">Aprendiz de Hangul</div>
+    <div class="player-level-row">
+      <span class="player-level" id="player-level-label">Nivel 1</span>
+      <span class="player-xp-text" id="player-xp-text">0 / 100 XP</span>
+    </div>
+    <div class="mini-bar"><div class="mini-fill" id="player-xp-fill" style="width:0%"></div></div>
+  </div>
+</div>
+<div class="exp-section">
+  <div class="exp-bar-wrap">
+    <div class="exp-label-row"><span class="exp-label day">⚡ EXP del día</span><span class="exp-val" id="exp-day-val">0 / 50 XP</span></div>
+    <div class="exp-track"><div class="exp-fill day-fill" id="exp-day-fill" style="width:0%"><div class="exp-shine"></div></div></div>
+  </div>
+  <div class="exp-bar-wrap">
+    <div class="exp-label-row"><span class="exp-label total">🌟 EXP total</span><span class="exp-val" id="exp-total-val">0 / 300 XP</span></div>
+    <div class="exp-track"><div class="exp-fill total-fill" id="exp-total-fill" style="width:0%"><div class="exp-shine"></div></div></div>
+  </div>
+</div>
+<div class="tabs">
+  <button class="tab active" onclick="showTab('study')"><span class="tab-icon">📖</span>Estudiar</button>
+  <button class="tab" onclick="showTab('missions')"><span class="tab-icon">🎯</span>Misiones</button>
+  <button class="tab" onclick="showTab('test')"><span class="tab-icon">⚔️</span>Test</button>
+  <button class="tab" onclick="showTab('overview')"><span class="tab-icon">📊</span>Progreso</button>
+  <button class="tab" onclick="showTab('all')"><span class="tab-icon">📋</span>Palabras</button>
+</div>
+<!-- STUDY -->
+<div id="panel-study" class="panel active">
+  <div class="session-stats">
+    <div class="s-stat"><div class="s-stat-num blue" id="s-new">0</div><div class="s-stat-label">Nuevas</div></div>
+    <div class="s-stat"><div class="s-stat-num yellow" id="s-learn">0</div><div class="s-stat-label">Aprendiendo</div></div>
+    <div class="s-stat"><div class="s-stat-num green" id="s-done">0</div><div class="s-stat-label">✓ Hoy</div></div>
+    <div class="s-stat"><div class="s-stat-num red" id="s-again">0</div><div class="s-stat-label">Repetir</div></div>
+  </div>
+  <div class="next-rev" id="next-rev"></div>
+  <div class="tap-hint" id="tap-hint"><span>◈</span>&nbsp;Toca la carta para revelar</div>
+  <div class="scene" id="scene" onclick="handleCardClick()">
+    <div class="card" id="card">
+      <div class="card-face card-front">
+        <div class="srs-pill" id="f-srs"></div>
+        <div class="card-cat" id="f-cat"></div>
+        <div class="card-korean" id="f-korean"></div>
+        <div class="card-roman" id="f-roman"></div>
+        <div class="card-hint-text">◈ toca para revelar</div>
+      </div>
+      <div class="card-face card-back">
+        <div class="srs-pill" id="b-srs"></div>
+        <div class="card-cat" id="b-cat"></div>
+        <div class="card-spanish" id="b-spanish"></div>
+        <div class="card-example" id="b-example"></div>
+      </div>
+    </div>
+  </div>
+  <div class="rate-btns" id="rate-btns" style="display:none">
+    <button class="rbtn rb-again" onclick="rate(0)">✗ Otra vez<span class="iv" id="iv0"></span></button>
+    <button class="rbtn rb-hard" onclick="rate(3)">~ Difícil<span class="iv" id="iv3"></span></button>
+    <button class="rbtn rb-good" onclick="rate(4)">✓ Bien<span class="iv" id="iv4"></span></button>
+    <button class="rbtn rb-easy" onclick="rate(5)">★ Fácil<span class="iv" id="iv5"></span></button>
+  </div>
+  <button class="skip-btn" id="btn-skip" onclick="skipCard()">Saltar →</button>
+  <div class="dots" id="dots"></div>
+  <div class="results" id="results">
+    <div class="results-emoji" id="r-emoji"></div>
+    <div class="results-title" id="r-title"></div>
+    <div class="results-score" id="r-score"></div>
+    <div class="results-sub" id="r-sub"></div>
+    <div class="results-note" id="r-note"></div>
+    <div class="next-session-box" id="nsr-box">
+      <div class="nsr-title">📅 Plan de sesiones recomendado</div>
+      <div id="nsr-items"></div>
+    </div>
+    <div style="background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.2);border-radius:8px;padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px;">
+      <span style="font-size:20px">💾</span>
+      <div style="flex:1">
+        <div style="font-size:9px;color:var(--accent3);font-weight:700;margin-bottom:2px;letter-spacing:0.08em">GUARDA TU PROGRESO</div>
+        <div style="font-size:8px;color:var(--muted);line-height:1.4">Ve a Progreso → Guardar para no perder tu avance</div>
+      </div>
+      <button onclick="exportProgress()" style="background:linear-gradient(135deg,var(--accent3),var(--accent4));color:#000;border:none;border-radius:6px;padding:7px 12px;font-family:'DM Mono',monospace;font-size:8px;font-weight:700;cursor:pointer;white-space:nowrap">⬇️ Guardar</button>
+    </div>
+    <button class="action-btn primary" onclick="restartSession()">↺ Nueva sesión</button>
+  </div>
+</div>
+<!-- MISSIONS -->
+<div id="panel-missions" class="panel">
+  <div class="missions-header">🎯 Misiones activas</div>
+  <div id="missions-list"></div>
+</div>
+<!-- TEST -->
+<div id="panel-test" class="panel">
+  <div id="test-no-test" style="text-align:center;padding:36px 20px;color:var(--muted);font-size:11px;line-height:1.7;">
+    <div style="font-size:36px;margin-bottom:10px">🔒</div>
+    Aprende <strong style="color:var(--text)">10 palabras</strong> para desbloquear tu primer test.<br>Cada 10 palabras, un nuevo desafío te espera.
+  </div>
+  <div id="test-available-box" style="display:none">
+    <div class="test-available">
+      <div class="test-available-title">⚔️ Test disponible</div>
+      <div class="test-available-desc" id="test-avail-desc"></div>
+      <button class="action-btn primary" onclick="startTest()">Comenzar test →</button>
+    </div>
+  </div>
+  <div id="test-running" style="display:none">
+    <div class="test-q" id="test-q-box">
+      <div class="test-q-num" id="tq-num"></div>
+      <div class="test-q-word" id="tq-word"></div>
+      <div class="test-q-sub" id="tq-sub"></div>
+      <div class="test-options" id="tq-opts"></div>
+    </div>
+  </div>
+  <div class="test-result" id="test-result-box">
+    <div style="font-size:42px;margin-bottom:7px" id="tr-emoji"></div>
+    <div class="test-result-score" id="tr-score"></div>
+    <div class="test-result-msg" id="tr-msg"></div>
+    <div class="test-reward" id="tr-reward"></div>
+    <button class="action-btn primary" onclick="finishTest()">Continuar →</button>
+  </div>
+</div>
+<!-- OVERVIEW -->
+<div id="panel-overview" class="panel">
+  <div class="ov-grid">
+    <div class="ov-card"><div class="ov-num blue" id="ov-unlocked">0</div><div class="ov-label">🔓 Desbloqueadas</div></div>
+    <div class="ov-card"><div class="ov-num" style="color:var(--accent)" id="ov-mastered">0</div><div class="ov-label">⭐ Dominadas</div></div>
+    <div class="ov-card"><div class="ov-num yellow" id="ov-learning">0</div><div class="ov-label">📖 Aprendiendo</div></div>
+    <div class="ov-card"><div class="ov-num green" id="ov-review">0</div><div class="ov-label">🔄 Revisión</div></div>
+  </div>
+  <div class="global-bar-wrap">
+    <div class="exp-label-row" style="margin-bottom:8px">
+      <span style="font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase">Progreso global</span>
+      <span style="font-size:9px;color:var(--muted)" id="gp-text"></span>
+    </div>
+    <div class="global-bar"><div class="gb-mastered" id="gb-mastered" style="width:0%"></div><div class="gb-active" id="gb-active" style="width:0%"></div><div class="gb-locked"></div></div>
+    <div class="global-bar-legend"><div class="gb-leg m">Dominadas</div><div class="gb-leg a">En activo</div><div class="gb-leg l">Bloqueadas</div></div>
+  </div>
+  <div class="sec-title">Próximas revisiones</div>
+  <div class="queue-list" id="queue-list"></div>
+  <div id="theme-section"></div>
+  <div class="save-box">
+    <div class="save-box-title">💾 Guardar / Cargar progreso</div>
+    <div class="save-box-desc">Guarda tu progreso en un archivo .json. Cárgalo la próxima vez para continuar donde lo dejaste — aunque cambies de dispositivo o navegador.</div>
+    <div class="save-btn-row">
+      <button class="save-btn export-btn" onclick="exportProgress()">⬇️ Guardar</button>
+      <label class="save-btn import-btn">⬆️ Cargar<input type="file" id="import-input" accept=".json" style="display:none" onchange="importProgress(this)"></label>
+    </div>
+    <div id="save-feedback" class="save-feedback"></div>
+  </div>
+  <br><button class="action-btn" onclick="resetAll()">🗑 Resetear progreso</button>
+</div>
+<!-- ALL -->
+<div id="panel-all" class="panel">
+  <div class="sec-title">Las 300 palabras</div>
+  <div class="all-list" id="all-list"></div>
+</div><!-- /panel-all -->
+
+
+<div id="panel-minigames" class="panel">
+  <div id="mg-hub-screen" class="mg-screen active">
+    <div class="sec-title">🎮 Minijuegos</div>
+    <div class="mg-hub">
+      <div class="mg-card" onclick="openGame('writing')"><div class="mg-icon">✍️</div><div class="mg-name">Modo Escritura</div><div class="mg-desc">Escribe la romanización correcta de cada palabra</div></div>
+      <div class="mg-card" onclick="openGame('memory')"><div class="mg-icon">🧠</div><div class="mg-name">Memoria</div><div class="mg-desc">Encuentra los pares coreano ↔ español</div></div>
+      <div class="mg-card" onclick="openGame('speed')"><div class="mg-icon">⚡</div><div class="mg-name">Carrera 60s</div><div class="mg-desc">Identifica el máximo de palabras en 60 segundos</div></div>
+      <div class="mg-card" onclick="openGame('phrase')"><div class="mg-icon">🔤</div><div class="mg-name">Frases</div><div class="mg-desc">Ordena las palabras para formar la frase correcta</div></div>
+      <div class="mg-card" onclick="openGame('dictado')" style="grid-column:1/-1"><div class="mg-icon">🎧</div><div class="mg-name">Dictado</div><div class="mg-desc">Escucha la palabra en coreano y selecciona la correcta</div></div>
+    </div>
+    <div style="font-size:9px;color:var(--muted);text-align:center;line-height:1.6">Necesitas al menos 4 palabras aprendidas para jugar.</div>
+  </div>
+  <div id="mg-writing-screen" class="mg-screen">
+    <div class="mg-header"><button class="mg-back" onclick="closeGame()">← Volver</button><div class="mg-game-title">✍️ Modo Escritura</div></div>
+    <div class="diff-row"><button class="diff-btn active" onclick="setWDiff('easy',this)">Fácil</button><button class="diff-btn" onclick="setWDiff('med',this)">Medio</button><button class="diff-btn" onclick="setWDiff('hard',this)">Difícil</button></div>
+    <div class="mg-score-row"><div class="mg-score-pill">✓ <span id="w-correct">0</span></div><div class="mg-score-pill">✗ <span id="w-wrong">0</span></div><div class="mg-score-pill">📝 <span id="w-total">0</span></div></div>
+    <div id="w-game-area">
+      <div class="wg-word" id="w-korean" style="font-family:'DM Serif Display',serif;font-style:italic;color:var(--accent2);font-size:36px;"></div><div class="wg-hint" id="w-hint"></div>
+      <input class="wg-input" id="w-input" type="text" placeholder="Escribe la romanización…" autocomplete="off" autocorrect="off" spellcheck="false">
+      <div class="wg-feedback" id="w-feedback"></div>
+      <button class="action-btn primary" onclick="checkWriting()">Comprobar →</button>
+      <button class="action-btn" onclick="skipWriting()" style="margin-top:0">Saltar</button>
+    </div>
+    <div class="gameover" id="w-gameover" style="display:none">
+      <div class="go-emoji" id="w-go-emoji"></div><div class="go-title" id="w-go-title"></div><div class="go-score" id="w-go-score"></div><div class="go-sub" id="w-go-sub"></div><div class="go-xp" id="w-go-xp"></div>
+      <button class="action-btn primary" onclick="startWriting()">Jugar de nuevo</button><button class="action-btn" onclick="closeGame()">Volver al hub</button>
+    </div>
+  </div>
+  <div id="mg-memory-screen" class="mg-screen">
+    <div class="mg-header"><button class="mg-back" onclick="closeGame()">← Volver</button><div class="mg-game-title">🧠 Memoria</div></div>
+    <div class="diff-row"><button class="diff-btn active" onclick="setMemDiff(4,this)">4 pares</button><button class="diff-btn" onclick="setMemDiff(6,this)">6 pares</button><button class="diff-btn" onclick="setMemDiff(8,this)">8 pares</button></div>
+    <div class="mg-score-row"><div class="mg-score-pill">🎯 <span id="mem-pairs">0</span></div><div class="mg-score-pill">🔄 <span id="mem-tries">0</span></div><div class="mg-score-pill timer">⏱ <span id="mem-time">0s</span></div></div>
+    <div class="mem-grid" id="mem-grid"></div>
+    <div class="gameover" id="mem-gameover" style="display:none">
+      <div class="go-emoji">🧠</div><div class="go-title" id="mem-go-title">¡Completado!</div><div class="go-score" id="mem-go-score"></div><div class="go-sub" id="mem-go-sub"></div><div class="go-xp" id="mem-go-xp"></div>
+      <button class="action-btn primary" onclick="startMemory()">Jugar de nuevo</button><button class="action-btn" onclick="closeGame()">Volver al hub</button>
+    </div>
+  </div>
+  <div id="mg-speed-screen" class="mg-screen">
+    <div class="mg-header"><button class="mg-back" onclick="closeGame()">← Volver</button><div class="mg-game-title">⚡ Carrera 60s</div></div>
+    <div class="mg-score-row"><div class="mg-score-pill">✓ <span id="sp-correct">0</span></div><div class="mg-score-pill">✗ <span id="sp-wrong">0</span></div><div class="mg-score-pill timer">⏱ <span id="sp-time">60</span>s</div></div>
+    <div class="sp-timer-bar"><div class="sp-timer-fill" id="sp-timer-fill" style="width:100%"></div></div>
+    <div class="sp-word-box" id="sp-word-box" style="display:none"><div class="sp-korean" id="sp-korean"></div><div class="sp-roman" id="sp-roman"></div></div>
+    <div class="sp-opts" id="sp-opts" style="display:none"></div>
+    <div id="sp-start-box" style="text-align:center;padding:20px">
+      <div style="font-size:36px;margin-bottom:10px">⚡</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:14px;line-height:1.6">60 segundos · identifica tantas palabras como puedas</div>
+      <button class="action-btn primary" onclick="startSpeed()">¡Empezar!</button>
+    </div>
+    <div class="gameover" id="sp-gameover" style="display:none">
+      <div class="go-emoji" id="sp-go-emoji"></div><div class="go-title">¡Tiempo!</div><div class="go-score" id="sp-go-score"></div><div class="go-sub" id="sp-go-sub"></div><div class="go-xp" id="sp-go-xp"></div>
+      <button class="action-btn primary" onclick="startSpeed()">Jugar de nuevo</button><button class="action-btn" onclick="closeGame()">Volver al hub</button>
+    </div>
+  </div>
+  <div id="mg-phrase-screen" class="mg-screen">
+    <div class="mg-header"><button class="mg-back" onclick="closeGame()">← Volver</button><div class="mg-game-title">🔤 Construye la frase</div></div>
+    <div class="mg-score-row"><div class="mg-score-pill">✓ <span id="pb-correct">0</span></div><div class="mg-score-pill">✗ <span id="pb-wrong">0</span></div><div class="mg-score-pill">📝 <span id="pb-total">0/8</span></div></div>
+    <div id="pb-game-area">
+      <div style="font-size:9px;color:var(--muted);letter-spacing:0.1em;margin-bottom:6px;text-transform:uppercase">Traduce al coreano:</div>
+      <div class="pb-translate" id="pb-translate"></div>
+      <div style="font-size:9px;color:var(--muted);margin-bottom:6px">Toca las palabras en orden:</div>
+      <div class="pb-target" id="pb-target"><span class="pb-target-hint">Aquí aparecerá tu frase…</span></div>
+      <div class="pb-words" id="pb-words"></div>
+      <div class="pb-feedback" id="pb-feedback"></div>
+      <button class="action-btn primary" onclick="checkPhrase()">Comprobar →</button>
+      <button class="action-btn" onclick="nextPhrase()" style="margin-top:0">Saltar</button>
+    </div>
+    <div class="gameover" id="pb-gameover" style="display:none">
+      <div class="go-emoji" id="pb-go-emoji"></div><div class="go-title" id="pb-go-title"></div><div class="go-score" id="pb-go-score"></div><div class="go-sub" id="pb-go-sub"></div><div class="go-xp" id="pb-go-xp"></div>
+      <button class="action-btn primary" onclick="startPhrase()">Jugar de nuevo</button><button class="action-btn" onclick="closeGame()">Volver al hub</button>
+    </div>
+  </div>
+  <div id="mg-dictado-screen" class="mg-screen">
+    <div class="mg-header"><button class="mg-back" onclick="closeGame()">← Volver</button><div class="mg-game-title">🎧 Dictado</div></div>
+    <div class="mg-score-row"><div class="mg-score-pill">✓ <span id="dc-correct">0</span></div><div class="mg-score-pill">✗ <span id="dc-wrong">0</span></div><div class="mg-score-pill">📝 <span id="dc-total">0/10</span></div></div>
+    <div id="dc-no-tts" class="dc-no-tts" style="display:none"><div style="font-size:32px;margin-bottom:8px">🔇</div>Tu dispositivo no soporta síntesis de voz en coreano.<br>Prueba en Chrome o Safari.</div>
+    <div id="dc-game-area">
+      <button class="dc-listen-btn" onclick="playDictado()"><span class="dc-speaker" id="dc-speaker">🔊</span><span class="dc-listen-label">Toca para escuchar</span></button>
+      <div style="font-size:9px;color:var(--muted);text-align:center;margin-bottom:10px">¿Cuál de estas palabras acabas de escuchar?</div>
+      <div class="dc-opts" id="dc-opts"></div>
+      <div class="pb-feedback" id="dc-feedback" style="margin-top:8px"></div>
+    </div>
+    <div class="gameover" id="dc-gameover" style="display:none">
+      <div class="go-emoji" id="dc-go-emoji"></div><div class="go-title" id="dc-go-title"></div><div class="go-score" id="dc-go-score"></div><div class="go-sub" id="dc-go-sub"></div><div class="go-xp" id="dc-go-xp"></div>
+      <button class="action-btn primary" onclick="startDictado()">Jugar de nuevo</button><button class="action-btn" onclick="closeGame()">Volver al hub</button>
+    </div>
+  </div>
+</div>
+
+
+</div><!-- /wrapper -->
+
+<script>
+const CARD_POOL=[
+{id:0,korean:"물",roman:"mul",spanish:"Agua",cat:"Sustantivos",catIdx:0,example:"물을 마셔요.",exTrans:"Bebo agua."},
+{id:1,korean:"집",roman:"jip",spanish:"Casa",cat:"Sustantivos",catIdx:0,example:"집에 가요.",exTrans:"Voy a casa."},
+{id:2,korean:"책",roman:"chaek",spanish:"Libro",cat:"Sustantivos",catIdx:0,example:"책을 읽어요.",exTrans:"Leo un libro."},
+{id:3,korean:"휴대폰",roman:"hyudaepon",spanish:"Teléfono móvil",cat:"Sustantivos",catIdx:0,example:"휴대폰이 어디에 있어요?",exTrans:"¿Dónde está el móvil?"},
+{id:4,korean:"학교",roman:"hakgyo",spanish:"Escuela",cat:"Sustantivos",catIdx:0,example:"학교에서 공부해요.",exTrans:"Estudio en la escuela."},
+{id:5,korean:"시간",roman:"sigan",spanish:"Tiempo / Hora",cat:"Sustantivos",catIdx:0,example:"시간이 없어요.",exTrans:"No tengo tiempo."},
+{id:6,korean:"돈",roman:"don",spanish:"Dinero",cat:"Sustantivos",catIdx:0,example:"돈이 있어요?",exTrans:"¿Tienes dinero?"},
+{id:7,korean:"날씨",roman:"nalsi",spanish:"Tiempo meteorológico",cat:"Sustantivos",catIdx:0,example:"오늘 날씨가 좋아요.",exTrans:"Hoy hace buen tiempo."},
+{id:8,korean:"이름",roman:"ireum",spanish:"Nombre",cat:"Sustantivos",catIdx:0,example:"이름이 뭐예요?",exTrans:"¿Cómo te llamas?"},
+{id:9,korean:"먹다",roman:"meokda",spanish:"Comer",cat:"Verbos",catIdx:1,example:"밥을 먹어요.",exTrans:"Como arroz."},
+{id:10,korean:"가다",roman:"gada",spanish:"Ir",cat:"Verbos",catIdx:1,example:"학교에 가요.",exTrans:"Voy a la escuela."},
+{id:11,korean:"보다",roman:"boda",spanish:"Ver / Mirar",cat:"Verbos",catIdx:1,example:"영화를 봐요.",exTrans:"Veo una película."},
+{id:12,korean:"공부하다",roman:"gongbuhada",spanish:"Estudiar",cat:"Verbos",catIdx:1,example:"한국어를 공부해요.",exTrans:"Estudio coreano."},
+{id:13,korean:"자다",roman:"jada",spanish:"Dormir",cat:"Verbos",catIdx:1,example:"일찍 자요.",exTrans:"Me duermo temprano."},
+{id:14,korean:"말하다",roman:"malhada",spanish:"Hablar / Decir",cat:"Verbos",catIdx:1,example:"천천히 말해 주세요.",exTrans:"Habla despacio, por favor."},
+{id:15,korean:"듣다",roman:"deutda",spanish:"Escuchar",cat:"Verbos",catIdx:1,example:"음악을 들어요.",exTrans:"Escucho música."},
+{id:16,korean:"사다",roman:"sada",spanish:"Comprar",cat:"Verbos",catIdx:1,example:"옷을 사고 싶어요.",exTrans:"Quiero comprar ropa."},
+{id:17,korean:"오다",roman:"oda",spanish:"Venir",cat:"Verbos",catIdx:1,example:"내일 올 수 있어요?",exTrans:"¿Puedes venir mañana?"},
+{id:18,korean:"알다",roman:"alda",spanish:"Saber / Conocer",cat:"Verbos",catIdx:1,example:"한국어를 알아요?",exTrans:"¿Sabes coreano?"},
+{id:19,korean:"맛있다",roman:"masitda",spanish:"Delicioso",cat:"Adjetivos",catIdx:2,example:"이 음식이 맛있어요!",exTrans:"¡Esta comida está deliciosa!"},
+{id:20,korean:"좋다",roman:"jota",spanish:"Bueno / Me gusta",cat:"Adjetivos",catIdx:2,example:"날씨가 좋아요.",exTrans:"El tiempo está bueno."},
+{id:21,korean:"크다",roman:"keuda",spanish:"Grande",cat:"Adjetivos",catIdx:2,example:"집이 커요.",exTrans:"La casa es grande."},
+{id:22,korean:"예쁘다",roman:"yeppeuda",spanish:"Bonito / Guapo",cat:"Adjetivos",catIdx:2,example:"꽃이 예뻐요.",exTrans:"La flor es bonita."},
+{id:23,korean:"재미있다",roman:"jaemiitda",spanish:"Divertido / Interesante",cat:"Adjetivos",catIdx:2,example:"이 드라마가 재미있어요.",exTrans:"Este drama es interesante."},
+{id:24,korean:"어렵다",roman:"eoryeopda",spanish:"Difícil",cat:"Adjetivos",catIdx:2,example:"한국어가 어려워요.",exTrans:"El coreano es difícil."},
+{id:25,korean:"피곤하다",roman:"pigonhada",spanish:"Estar cansado",cat:"Adjetivos",catIdx:2,example:"오늘 너무 피곤해요.",exTrans:"Hoy estoy muy cansado/a."},
+{id:26,korean:"지금",roman:"jigeum",spanish:"Ahora",cat:"Adverbios",catIdx:3,example:"지금 뭐 해요?",exTrans:"¿Qué haces ahora?"},
+{id:27,korean:"항상",roman:"hangsang",spanish:"Siempre",cat:"Adverbios",catIdx:3,example:"항상 감사해요.",exTrans:"Siempre estoy agradecido/a."},
+{id:28,korean:"빨리",roman:"ppalli",spanish:"Rápidamente",cat:"Adverbios",catIdx:3,example:"빨리 와요!",exTrans:"¡Ven rápido!"},
+{id:29,korean:"같이",roman:"gachi",spanish:"Juntos",cat:"Adverbios",catIdx:3,example:"같이 밥 먹어요.",exTrans:"Comamos juntos."},
+{id:30,korean:"너무",roman:"neomu",spanish:"Demasiado / Muy",cat:"Adverbios",catIdx:3,example:"너무 매워요.",exTrans:"Está demasiado picante."},
+{id:31,korean:"조금",roman:"jogeum",spanish:"Un poco",cat:"Adverbios",catIdx:3,example:"조금만 기다려요.",exTrans:"Espera un poco."},
+{id:32,korean:"감사합니다",roman:"gamsahamnida",spanish:"Gracias (formal)",cat:"Expresiones",catIdx:4,example:"도와주셔서 감사합니다.",exTrans:"Gracias por ayudarme."},
+{id:33,korean:"괜찮아요",roman:"gwaenchanayo",spanish:"Está bien / No pasa nada",cat:"Expresiones",catIdx:4,example:"괜찮아요? — 네, 괜찮아요.",exTrans:"¿Estás bien? — Sí, estoy bien."},
+{id:34,korean:"주세요",roman:"juseyo",spanish:"Por favor, deme",cat:"Expresiones",catIdx:4,example:"물 주세요.",exTrans:"Agua, por favor."},
+{id:35,korean:"얼마예요?",roman:"eolmayeyo?",spanish:"¿Cuánto cuesta?",cat:"Expresiones",catIdx:4,example:"이거 얼마예요?",exTrans:"¿Cuánto cuesta esto?"},
+{id:36,korean:"화이팅",roman:"hwaiting",spanish:"¡Ánimo! / ¡Vamos!",cat:"Expresiones",catIdx:4,example:"시험 잘 봐요, 화이팅!",exTrans:"¡Mucho ánimo en el examen!"},
+{id:37,korean:"잠깐만요",roman:"jamkkanmanyo",spanish:"Un momento, por favor",cat:"Expresiones",catIdx:4,example:"잠깐만요, 곧 갈게요.",exTrans:"Un momento, enseguida voy."},
+{id:38,korean:"김치",roman:"gimchi",spanish:"Kimchi",cat:"Comida",catIdx:5,example:"김치를 좋아해요.",exTrans:"Me gusta el kimchi."},
+{id:39,korean:"커피",roman:"keopi",spanish:"Café",cat:"Comida",catIdx:5,example:"커피 한 잔 주세요.",exTrans:"Una taza de café, por favor."},
+{id:40,korean:"밥",roman:"bap",spanish:"Arroz cocido / Comida",cat:"Comida",catIdx:5,example:"밥 먹었어요?",exTrans:"¿Has comido ya?"},
+{id:41,korean:"치킨",roman:"chikin",spanish:"Pollo frito",cat:"Comida",catIdx:5,example:"치킨을 시켜요.",exTrans:"Pedimos pollo frito."},
+{id:42,korean:"라면",roman:"ramyeon",spanish:"Ramen coreano",cat:"Comida",catIdx:5,example:"라면 먹고 싶어요.",exTrans:"Quiero comer ramen."},
+{id:43,korean:"카페",roman:"kape",spanish:"Cafetería",cat:"Lugares",catIdx:2,example:"카페에서 공부해요.",exTrans:"Estudio en la cafetería."},
+{id:44,korean:"편의점",roman:"pyeonuijeom",spanish:"Tienda de conveniencia",cat:"Lugares",catIdx:2,example:"편의점에서 물을 사요.",exTrans:"Compro agua en la tienda."},
+{id:45,korean:"지하철",roman:"jihacheol",spanish:"Metro",cat:"Lugares",catIdx:2,example:"지하철을 타요.",exTrans:"Tomo el metro."},
+{id:46,korean:"친구",roman:"chingu",spanish:"Amigo/a",cat:"Familia",catIdx:3,example:"친구를 만나요.",exTrans:"Me encuentro con un amigo."},
+{id:47,korean:"선생님",roman:"seonsaengnim",spanish:"Profesor/a",cat:"Familia",catIdx:3,example:"선생님이 좋아요.",exTrans:"Me gusta mi profesor/a."},
+{id:48,korean:"가족",roman:"gajok",spanish:"Familia",cat:"Familia",catIdx:3,example:"가족이 몇 명이에요?",exTrans:"¿Cuántos sois en tu familia?"},
+{id:49,korean:"사람",roman:"saram",spanish:"Persona / Gente",cat:"Familia",catIdx:3,example:"좋은 사람이에요.",exTrans:"Es una buena persona."},
+{id:50,korean:"방",roman:"bang",spanish:"Habitación",cat:"Sustantivos",catIdx:0,example:"방이 넓어요.",exTrans:"La habitación es amplia."},
+{id:51,korean:"침대",roman:"chimdae",spanish:"Cama",cat:"Sustantivos",catIdx:0,example:"침대에서 자요.",exTrans:"Duermo en la cama."},
+{id:52,korean:"창문",roman:"changmun",spanish:"Ventana",cat:"Sustantivos",catIdx:0,example:"창문을 열어요.",exTrans:"Abro la ventana."},
+{id:53,korean:"의자",roman:"uija",spanish:"Silla",cat:"Sustantivos",catIdx:0,example:"의자에 앉아요.",exTrans:"Me siento en la silla."},
+{id:54,korean:"책상",roman:"chaeksang",spanish:"Escritorio",cat:"Sustantivos",catIdx:0,example:"책상 위에 책이 있어요.",exTrans:"Hay un libro sobre el escritorio."},
+{id:55,korean:"냉장고",roman:"naengjanggo",spanish:"Nevera",cat:"Sustantivos",catIdx:0,example:"냉장고에 음식이 있어요.",exTrans:"Hay comida en la nevera."},
+{id:56,korean:"거울",roman:"geoul",spanish:"Espejo",cat:"Sustantivos",catIdx:0,example:"거울을 봐요.",exTrans:"Me miro en el espejo."},
+{id:57,korean:"나라",roman:"nara",spanish:"País",cat:"Sustantivos",catIdx:0,example:"어느 나라에서 왔어요?",exTrans:"¿De qué país eres?"},
+{id:58,korean:"도시",roman:"dosi",spanish:"Ciudad",cat:"Sustantivos",catIdx:0,example:"이 도시가 좋아요.",exTrans:"Me gusta esta ciudad."},
+{id:59,korean:"길",roman:"gil",spanish:"Calle / Camino",cat:"Sustantivos",catIdx:0,example:"이 길이 맞아요?",exTrans:"¿Es este el camino correcto?"},
+{id:60,korean:"문",roman:"mun",spanish:"Puerta",cat:"Sustantivos",catIdx:0,example:"문을 닫아 주세요.",exTrans:"Por favor cierra la puerta."},
+{id:61,korean:"회사",roman:"hoesa",spanish:"Empresa / Trabajo",cat:"Sustantivos",catIdx:0,example:"회사에 다녀요.",exTrans:"Trabajo en una empresa."},
+{id:62,korean:"병원",roman:"byeongwon",spanish:"Hospital",cat:"Sustantivos",catIdx:0,example:"병원에 가야 해요.",exTrans:"Tengo que ir al hospital."},
+{id:63,korean:"약",roman:"yak",spanish:"Medicina",cat:"Sustantivos",catIdx:0,example:"약을 먹어요.",exTrans:"Tomo la medicina."},
+{id:64,korean:"마을",roman:"maeul",spanish:"Pueblo / Aldea",cat:"Sustantivos",catIdx:0,example:"작은 마을에 살아요.",exTrans:"Vivo en un pueblo pequeño."},
+{id:65,korean:"읽다",roman:"ikda",spanish:"Leer",cat:"Verbos",catIdx:1,example:"책을 읽어요.",exTrans:"Leo un libro."},
+{id:66,korean:"쓰다",roman:"sseuda",spanish:"Escribir / Usar",cat:"Verbos",catIdx:1,example:"일기를 써요.",exTrans:"Escribo un diario."},
+{id:67,korean:"만나다",roman:"mannada",spanish:"Encontrarse / Conocer",cat:"Verbos",catIdx:1,example:"친구를 만나요.",exTrans:"Me encuentro con un amigo."},
+{id:68,korean:"주다",roman:"juda",spanish:"Dar",cat:"Verbos",catIdx:1,example:"선물을 줘요.",exTrans:"Le doy un regalo."},
+{id:69,korean:"받다",roman:"batda",spanish:"Recibir",cat:"Verbos",catIdx:1,example:"선물을 받았어요.",exTrans:"Recibí un regalo."},
+{id:70,korean:"타다",roman:"tada",spanish:"Subir / Montar",cat:"Verbos",catIdx:1,example:"버스를 타요.",exTrans:"Tomo el autobús."},
+{id:71,korean:"일하다",roman:"ilhada",spanish:"Trabajar",cat:"Verbos",catIdx:1,example:"열심히 일해요.",exTrans:"Trabajo duro."},
+{id:72,korean:"쉬다",roman:"swida",spanish:"Descansar",cat:"Verbos",catIdx:1,example:"집에서 쉬어요.",exTrans:"Descanso en casa."},
+{id:73,korean:"운동하다",roman:"undonghada",spanish:"Hacer ejercicio",cat:"Verbos",catIdx:1,example:"매일 운동해요.",exTrans:"Hago ejercicio todos los días."},
+{id:74,korean:"전화하다",roman:"jeonhwahada",spanish:"Llamar por teléfono",cat:"Verbos",catIdx:1,example:"나중에 전화할게요.",exTrans:"Te llamo más tarde."},
+{id:75,korean:"일어나다",roman:"ireonada",spanish:"Levantarse",cat:"Verbos",catIdx:1,example:"7시에 일어나요.",exTrans:"Me levanto a las 7."},
+{id:76,korean:"앉다",roman:"anda",spanish:"Sentarse",cat:"Verbos",catIdx:1,example:"여기 앉아요.",exTrans:"Siéntate aquí."},
+{id:77,korean:"서다",roman:"seoda",spanish:"Ponerse de pie",cat:"Verbos",catIdx:1,example:"여기서 서요.",exTrans:"Para aquí."},
+{id:78,korean:"열다",roman:"yeolda",spanish:"Abrir",cat:"Verbos",catIdx:1,example:"문을 열어요.",exTrans:"Abro la puerta."},
+{id:79,korean:"닫다",roman:"datda",spanish:"Cerrar",cat:"Verbos",catIdx:1,example:"창문을 닫아요.",exTrans:"Cierro la ventana."},
+{id:80,korean:"작다",roman:"jakda",spanish:"Pequeño",cat:"Adjetivos",catIdx:2,example:"이 방이 작아요.",exTrans:"Esta habitación es pequeña."},
+{id:81,korean:"많다",roman:"manta",spanish:"Mucho / Numeroso",cat:"Adjetivos",catIdx:2,example:"사람이 많아요.",exTrans:"Hay mucha gente."},
+{id:82,korean:"적다",roman:"jeokda",spanish:"Poco / Escaso",cat:"Adjetivos",catIdx:2,example:"시간이 적어요.",exTrans:"Hay poco tiempo."},
+{id:83,korean:"나쁘다",roman:"nappeuda",spanish:"Malo",cat:"Adjetivos",catIdx:2,example:"날씨가 나빠요.",exTrans:"El tiempo está malo."},
+{id:84,korean:"비싸다",roman:"bissada",spanish:"Caro",cat:"Adjetivos",catIdx:2,example:"이 옷이 너무 비싸요.",exTrans:"Esta ropa es demasiado cara."},
+{id:85,korean:"싸다",roman:"ssada",spanish:"Barato",cat:"Adjetivos",catIdx:2,example:"여기 음식이 싸요.",exTrans:"La comida aquí es barata."},
+{id:86,korean:"빠르다",roman:"ppareuda",spanish:"Rápido",cat:"Adjetivos",catIdx:2,example:"이 기차가 빨라요.",exTrans:"Este tren es rápido."},
+{id:87,korean:"느리다",roman:"neurida",spanish:"Lento",cat:"Adjetivos",catIdx:2,example:"인터넷이 느려요.",exTrans:"El internet es lento."},
+{id:88,korean:"쉽다",roman:"swipda",spanish:"Fácil",cat:"Adjetivos",catIdx:2,example:"이 문제가 쉬워요.",exTrans:"Este problema es fácil."},
+{id:89,korean:"행복하다",roman:"haengbokhada",spanish:"Ser feliz",cat:"Adjetivos",catIdx:2,example:"지금 행복해요.",exTrans:"Ahora soy feliz."},
+{id:90,korean:"슬프다",roman:"seulpeuda",spanish:"Triste",cat:"Adjetivos",catIdx:2,example:"영화가 슬펐어요.",exTrans:"La película era triste."},
+{id:91,korean:"바쁘다",roman:"bappeuda",spanish:"Estar ocupado",cat:"Adjetivos",catIdx:2,example:"요즘 너무 바빠요.",exTrans:"Últimamente estoy muy ocupado/a."},
+{id:92,korean:"아프다",roman:"apeuda",spanish:"Doler / Estar enfermo",cat:"Adjetivos",catIdx:2,example:"머리가 아파요.",exTrans:"Me duele la cabeza."},
+{id:93,korean:"춥다",roman:"chupda",spanish:"Frío",cat:"Adjetivos",catIdx:2,example:"오늘 너무 추워요.",exTrans:"Hoy hace mucho frío."},
+{id:94,korean:"덥다",roman:"deopda",spanish:"Caluroso",cat:"Adjetivos",catIdx:2,example:"여름에 너무 더워요.",exTrans:"En verano hace mucho calor."},
+{id:95,korean:"오늘",roman:"oneul",spanish:"Hoy",cat:"Adverbios",catIdx:3,example:"오늘 뭐 해요?",exTrans:"¿Qué haces hoy?"},
+{id:96,korean:"내일",roman:"naeil",spanish:"Mañana",cat:"Adverbios",catIdx:3,example:"내일 만나요.",exTrans:"Nos vemos mañana."},
+{id:97,korean:"어제",roman:"eoje",spanish:"Ayer",cat:"Adverbios",catIdx:3,example:"어제 영화를 봤어요.",exTrans:"Ayer vi una película."},
+{id:98,korean:"가끔",roman:"gakkeum",spanish:"A veces",cat:"Adverbios",catIdx:3,example:"가끔 운동해요.",exTrans:"Hago ejercicio a veces."},
+{id:99,korean:"보통",roman:"botong",spanish:"Normalmente",cat:"Adverbios",catIdx:3,example:"보통 7시에 일어나요.",exTrans:"Normalmente me levanto a las 7."},
+{id:100,korean:"혼자",roman:"honja",spanish:"Solo / A solas",cat:"Adverbios",catIdx:3,example:"혼자 여행해요.",exTrans:"Viajo solo/a."},
+{id:101,korean:"먼저",roman:"meonjeo",spanish:"Primero / Antes",cat:"Adverbios",catIdx:3,example:"먼저 드세요.",exTrans:"Sírvase primero."},
+{id:102,korean:"나중에",roman:"najunge",spanish:"Después / Más tarde",cat:"Adverbios",catIdx:3,example:"나중에 얘기해요.",exTrans:"Hablamos más tarde."},
+{id:103,korean:"그래서",roman:"geuraeseo",spanish:"Por eso / Así que",cat:"Adverbios",catIdx:3,example:"바빠요. 그래서 못 가요.",exTrans:"Estoy ocupado/a. Por eso no puedo ir."},
+{id:104,korean:"하지만",roman:"hajiman",spanish:"Pero / Sin embargo",cat:"Adverbios",catIdx:3,example:"비싸요. 하지만 사고 싶어요.",exTrans:"Es caro. Pero quiero comprarlo."},
+{id:105,korean:"왜냐하면",roman:"waenyahamyeon",spanish:"Porque",cat:"Adverbios",catIdx:3,example:"공부해요. 왜냐하면 시험이 있어요.",exTrans:"Estudio. Porque tengo un examen."},
+{id:106,korean:"안녕하세요",roman:"annyeonghaseyo",spanish:"Hola (formal)",cat:"Expresiones",catIdx:4,example:"안녕하세요! 처음 뵙겠습니다.",exTrans:"¡Hola! Es un placer conocerle."},
+{id:107,korean:"죄송합니다",roman:"joesonghamnida",spanish:"Lo siento (formal)",cat:"Expresiones",catIdx:4,example:"늦어서 죄송합니다.",exTrans:"Lo siento por llegar tarde."},
+{id:108,korean:"잘 먹겠습니다",roman:"jal meokgesseumnida",spanish:"Buen provecho (antes)",cat:"Expresiones",catIdx:4,example:"잘 먹겠습니다!",exTrans:"¡Que aproveche!"},
+{id:109,korean:"잘 먹었습니다",roman:"jal meogeosseumnida",spanish:"Gracias por la comida",cat:"Expresiones",catIdx:4,example:"잘 먹었습니다, 감사합니다.",exTrans:"Gracias, estaba delicioso."},
+{id:110,korean:"수고하셨어요",roman:"sugohasyeosseoyo",spanish:"Buen trabajo / Gracias",cat:"Expresiones",catIdx:4,example:"오늘도 수고하셨어요.",exTrans:"Gracias por el esfuerzo de hoy."},
+{id:111,korean:"어서 오세요",roman:"eoseo oseyo",spanish:"Bienvenido/a",cat:"Expresiones",catIdx:4,example:"어서 오세요!",exTrans:"¡Bienvenido/a!"},
+{id:112,korean:"모르겠어요",roman:"moreugesseoyo",spanish:"No sé / No estoy seguro",cat:"Expresiones",catIdx:4,example:"잘 모르겠어요.",exTrans:"No estoy muy seguro/a."},
+{id:113,korean:"비빔밥",roman:"bibimbap",spanish:"Bibimbap",cat:"Comida",catIdx:5,example:"비빔밥을 좋아해요.",exTrans:"Me gusta el bibimbap."},
+{id:114,korean:"불고기",roman:"bulgogi",spanish:"Bulgogi",cat:"Comida",catIdx:5,example:"불고기가 맛있어요.",exTrans:"El bulgogi está delicioso."},
+{id:115,korean:"삼겹살",roman:"samgyeopsal",spanish:"Panceta a la parrilla",cat:"Comida",catIdx:5,example:"삼겹살을 구워요.",exTrans:"Asamos la panceta."},
+{id:116,korean:"떡볶이",roman:"tteokbokki",spanish:"Tteokbokki",cat:"Comida",catIdx:5,example:"떡볶이가 매워요.",exTrans:"El tteokbokki está picante."},
+{id:117,korean:"소주",roman:"soju",spanish:"Soju",cat:"Comida",catIdx:5,example:"소주를 마셔요.",exTrans:"Bebo soju."},
+{id:118,korean:"맥주",roman:"maekju",spanish:"Cerveza",cat:"Comida",catIdx:5,example:"맥주 한 잔 주세요.",exTrans:"Una cerveza, por favor."},
+{id:119,korean:"과일",roman:"gwail",spanish:"Fruta",cat:"Comida",catIdx:5,example:"과일을 좋아해요.",exTrans:"Me gusta la fruta."},
+{id:120,korean:"채소",roman:"chaeso",spanish:"Verdura",cat:"Comida",catIdx:5,example:"채소를 많이 먹어요.",exTrans:"Como muchas verduras."},
+{id:121,korean:"고기",roman:"gogi",spanish:"Carne",cat:"Comida",catIdx:5,example:"고기를 안 먹어요.",exTrans:"No como carne."},
+{id:122,korean:"생선",roman:"saengseon",spanish:"Pescado",cat:"Comida",catIdx:5,example:"생선이 신선해요.",exTrans:"El pescado está fresco."},
+{id:123,korean:"공원",roman:"gongwon",spanish:"Parque",cat:"Lugares",catIdx:2,example:"공원에서 산책해요.",exTrans:"Doy un paseo por el parque."},
+{id:124,korean:"은행",roman:"eunhaeng",spanish:"Banco",cat:"Lugares",catIdx:2,example:"은행에 가야 해요.",exTrans:"Tengo que ir al banco."},
+{id:125,korean:"마트",roman:"mateu",spanish:"Supermercado",cat:"Lugares",catIdx:2,example:"마트에서 장을 봐요.",exTrans:"Compro en el supermercado."},
+{id:126,korean:"식당",roman:"sikdang",spanish:"Restaurante",cat:"Lugares",catIdx:2,example:"식당에서 밥을 먹어요.",exTrans:"Como en el restaurante."},
+{id:127,korean:"공항",roman:"gonghang",spanish:"Aeropuerto",cat:"Lugares",catIdx:2,example:"공항에 마중 나갔어요.",exTrans:"Fui a buscar al aeropuerto."},
+{id:128,korean:"버스 정류장",roman:"beoseu jeongnyujang",spanish:"Parada de autobús",cat:"Lugares",catIdx:2,example:"버스 정류장이 어디예요?",exTrans:"¿Dónde está la parada?"},
+{id:129,korean:"호텔",roman:"hotel",spanish:"Hotel",cat:"Lugares",catIdx:2,example:"호텔에 체크인해요.",exTrans:"Hago check-in en el hotel."},
+{id:130,korean:"어머니",roman:"eomeoni",spanish:"Madre (formal)",cat:"Familia",catIdx:3,example:"어머니가 요리를 잘 해요.",exTrans:"Mi madre cocina muy bien."},
+{id:131,korean:"아버지",roman:"abeoji",spanish:"Padre (formal)",cat:"Familia",catIdx:3,example:"아버지가 회사에 가요.",exTrans:"Mi padre va al trabajo."},
+{id:132,korean:"엄마",roman:"eomma",spanish:"Mamá",cat:"Familia",catIdx:3,example:"엄마, 밥 먹었어?",exTrans:"Mamá, ¿has comido?"},
+{id:133,korean:"아빠",roman:"appa",spanish:"Papá",cat:"Familia",catIdx:3,example:"아빠가 집에 와요.",exTrans:"Papá viene a casa."},
+{id:134,korean:"오빠",roman:"oppa",spanish:"Hermano mayor (habla mujer)",cat:"Familia",catIdx:3,example:"오빠가 도와줘요.",exTrans:"Mi hermano mayor me ayuda."},
+{id:135,korean:"형",roman:"hyeong",spanish:"Hermano mayor (habla hombre)",cat:"Familia",catIdx:3,example:"형이 대학생이에요.",exTrans:"Mi hermano mayor es universitario."},
+{id:136,korean:"언니",roman:"eonni",spanish:"Hermana mayor (habla mujer)",cat:"Familia",catIdx:3,example:"언니랑 쇼핑해요.",exTrans:"Voy de compras con mi hermana."},
+{id:137,korean:"누나",roman:"nuna",spanish:"Hermana mayor (habla hombre)",cat:"Familia",catIdx:3,example:"누나가 요리사예요.",exTrans:"Mi hermana mayor es cocinera."},
+{id:138,korean:"남동생",roman:"namdongsaeng",spanish:"Hermano menor",cat:"Familia",catIdx:3,example:"남동생이 중학생이에요.",exTrans:"Mi hermano menor está en secundaria."},
+{id:139,korean:"여동생",roman:"yeodongsaeng",spanish:"Hermana menor",cat:"Familia",catIdx:3,example:"여동생이 귀여워요.",exTrans:"Mi hermana menor es adorable."},
+{id:140,korean:"할아버지",roman:"harabeoji",spanish:"Abuelo",cat:"Familia",catIdx:3,example:"할아버지가 건강해요.",exTrans:"Mi abuelo está sano."},
+{id:141,korean:"할머니",roman:"halmeoni",spanish:"Abuela",cat:"Familia",catIdx:3,example:"할머니 음식이 맛있어요.",exTrans:"La comida de la abuela está deliciosa."},
+{id:142,korean:"저",roman:"jeo",spanish:"Yo (formal)",cat:"Pronombres",catIdx:4,example:"저는 학생이에요.",exTrans:"Yo soy estudiante."},
+{id:143,korean:"나",roman:"na",spanish:"Yo (informal)",cat:"Pronombres",catIdx:4,example:"나는 괜찮아.",exTrans:"Yo estoy bien."},
+{id:144,korean:"우리",roman:"uri",spanish:"Nosotros / Nuestro",cat:"Pronombres",catIdx:4,example:"우리 같이 가요.",exTrans:"Vamos juntos."},
+{id:145,korean:"이것",roman:"igeot",spanish:"Esto",cat:"Pronombres",catIdx:4,example:"이것이 뭐예요?",exTrans:"¿Qué es esto?"},
+{id:146,korean:"그것",roman:"geugeot",spanish:"Eso",cat:"Pronombres",catIdx:4,example:"그것 주세요.",exTrans:"Deme eso."},
+{id:147,korean:"은/는",roman:"eun/neun",spanish:"Partícula de tema",cat:"Pronombres",catIdx:4,example:"저는 한국어를 공부해요.",exTrans:"Yo estudio coreano."},
+{id:148,korean:"이/가",roman:"i/ga",spanish:"Partícula de sujeto",cat:"Pronombres",catIdx:4,example:"비가 와요.",exTrans:"Llueve."},
+{id:149,korean:"을/를",roman:"eul/reul",spanish:"Partícula de objeto",cat:"Pronombres",catIdx:4,example:"책을 읽어요.",exTrans:"Leo un libro."},
+{id:150,korean:"에서",roman:"eseo",spanish:"En (lugar de acción)",cat:"Pronombres",catIdx:4,example:"카페에서 공부해요.",exTrans:"Estudio en la cafetería."},
+{id:151,korean:"하나",roman:"hana",spanish:"Uno (nativo)",cat:"Números",catIdx:0,example:"하나만 주세요.",exTrans:"Deme solo uno."},
+{id:152,korean:"둘",roman:"dul",spanish:"Dos (nativo)",cat:"Números",catIdx:0,example:"둘이서 먹어요.",exTrans:"Comemos entre dos."},
+{id:153,korean:"셋",roman:"set",spanish:"Tres (nativo)",cat:"Números",catIdx:0,example:"셋을 골라요.",exTrans:"Elijo tres."},
+{id:154,korean:"넷",roman:"net",spanish:"Cuatro (nativo)",cat:"Números",catIdx:0,example:"넷이 있어요.",exTrans:"Hay cuatro."},
+{id:155,korean:"다섯",roman:"daseot",spanish:"Cinco (nativo)",cat:"Números",catIdx:0,example:"다섯 명이에요.",exTrans:"Son cinco personas."},
+{id:156,korean:"열",roman:"yeol",spanish:"Diez (nativo)",cat:"Números",catIdx:0,example:"열 시예요.",exTrans:"Son las diez."},
+{id:157,korean:"일",roman:"il",spanish:"Uno (sino-coreano)",cat:"Números",catIdx:0,example:"일 층이에요.",exTrans:"Es la primera planta."},
+{id:158,korean:"십",roman:"sip",spanish:"Diez (sino-coreano)",cat:"Números",catIdx:0,example:"십 분 기다려요.",exTrans:"Espera diez minutos."},
+{id:159,korean:"백",roman:"baek",spanish:"Cien",cat:"Números",catIdx:0,example:"백 원이에요.",exTrans:"Son cien wones."},
+{id:160,korean:"년",roman:"nyeon",spanish:"Año",cat:"Números",catIdx:0,example:"몇 년도예요?",exTrans:"¿De qué año es?"},
+{id:161,korean:"월",roman:"wol",spanish:"Mes",cat:"Números",catIdx:0,example:"몇 월이에요?",exTrans:"¿Qué mes es?"},
+{id:162,korean:"일",roman:"il",spanish:"Día del mes",cat:"Números",catIdx:0,example:"오늘이 며칠이에요?",exTrans:"¿A cuántos estamos?"},
+{id:163,korean:"요일",roman:"yoil",spanish:"Día de la semana",cat:"Números",catIdx:0,example:"무슨 요일이에요?",exTrans:"¿Qué día es?"},
+{id:164,korean:"주",roman:"ju",spanish:"Semana",cat:"Números",catIdx:0,example:"다음 주에 만나요.",exTrans:"Nos vemos la semana que viene."},
+{id:165,korean:"시",roman:"si",spanish:"Hora",cat:"Números",catIdx:0,example:"몇 시예요?",exTrans:"¿Qué hora es?"},
+{id:166,korean:"빨간색",roman:"ppalgansaek",spanish:"Rojo",cat:"Colores",catIdx:5,example:"빨간색 옷이 예뻐요.",exTrans:"La ropa roja es bonita."},
+{id:167,korean:"파란색",roman:"paransaek",spanish:"Azul",cat:"Colores",catIdx:5,example:"파란색 하늘이에요.",exTrans:"El cielo es azul."},
+{id:168,korean:"노란색",roman:"noransaek",spanish:"Amarillo",cat:"Colores",catIdx:5,example:"노란색 꽃이 예뻐요.",exTrans:"Las flores amarillas son bonitas."},
+{id:169,korean:"초록색",roman:"choroksaek",spanish:"Verde",cat:"Colores",catIdx:5,example:"초록색을 좋아해요.",exTrans:"Me gusta el verde."},
+{id:170,korean:"검은색",roman:"geomeunsaek",spanish:"Negro",cat:"Colores",catIdx:5,example:"검은색 가방이에요.",exTrans:"Es un bolso negro."},
+{id:171,korean:"흰색",roman:"huinsaek",spanish:"Blanco",cat:"Colores",catIdx:5,example:"흰색 티셔츠를 입어요.",exTrans:"Me pongo una camiseta blanca."},
+{id:172,korean:"분홍색",roman:"bunhongsaek",spanish:"Rosa",cat:"Colores",catIdx:5,example:"분홍색이 귀여워요.",exTrans:"El rosa es lindo."},
+{id:173,korean:"회색",roman:"hoesaek",spanish:"Gris",cat:"Colores",catIdx:5,example:"회색 하늘이에요.",exTrans:"El cielo está gris."},
+{id:174,korean:"옷",roman:"ot",spanish:"Ropa",cat:"Ropa",catIdx:3,example:"옷을 사러 가요.",exTrans:"Voy a comprar ropa."},
+{id:175,korean:"신발",roman:"sinbal",spanish:"Zapatos",cat:"Ropa",catIdx:3,example:"새 신발을 샀어요.",exTrans:"Compré zapatos nuevos."},
+{id:176,korean:"바지",roman:"baji",spanish:"Pantalón",cat:"Ropa",catIdx:3,example:"청바지를 입어요.",exTrans:"Me pongo vaqueros."},
+{id:177,korean:"셔츠",roman:"syeocheu",spanish:"Camisa",cat:"Ropa",catIdx:3,example:"흰 셔츠가 깨끗해요.",exTrans:"La camisa blanca está limpia."},
+{id:178,korean:"가방",roman:"gabang",spanish:"Bolso / Mochila",cat:"Ropa",catIdx:3,example:"가방이 무거워요.",exTrans:"La mochila es pesada."},
+{id:179,korean:"모자",roman:"moja",spanish:"Gorro / Sombrero",cat:"Ropa",catIdx:3,example:"모자를 써요.",exTrans:"Me pongo el gorro."},
+{id:180,korean:"안경",roman:"angyeong",spanish:"Gafas",cat:"Ropa",catIdx:3,example:"안경을 써요.",exTrans:"Llevo gafas."},
+{id:181,korean:"시계",roman:"sigye",spanish:"Reloj",cat:"Ropa",catIdx:3,example:"시계를 봐요.",exTrans:"Miro el reloj."},
+{id:182,korean:"지갑",roman:"jigap",spanish:"Cartera",cat:"Ropa",catIdx:3,example:"지갑을 잃어버렸어요.",exTrans:"He perdido la cartera."},
+{id:183,korean:"우산",roman:"usan",spanish:"Paraguas",cat:"Ropa",catIdx:3,example:"우산을 가져가요.",exTrans:"Llevo el paraguas."},
+{id:184,korean:"머리",roman:"meori",spanish:"Cabeza / Cabello",cat:"Cuerpo",catIdx:0,example:"머리가 아파요.",exTrans:"Me duele la cabeza."},
+{id:185,korean:"눈",roman:"nun",spanish:"Ojo / Nieve",cat:"Cuerpo",catIdx:0,example:"눈이 커요.",exTrans:"Tiene los ojos grandes."},
+{id:186,korean:"코",roman:"ko",spanish:"Nariz",cat:"Cuerpo",catIdx:0,example:"코가 막혔어요.",exTrans:"Tengo la nariz tapada."},
+{id:187,korean:"입",roman:"ip",spanish:"Boca",cat:"Cuerpo",catIdx:0,example:"입이 작아요.",exTrans:"Tiene la boca pequeña."},
+{id:188,korean:"귀",roman:"gwi",spanish:"Oreja",cat:"Cuerpo",catIdx:0,example:"귀가 아파요.",exTrans:"Me duele el oído."},
+{id:189,korean:"손",roman:"son",spanish:"Mano",cat:"Cuerpo",catIdx:0,example:"손을 씻어요.",exTrans:"Me lavo las manos."},
+{id:190,korean:"발",roman:"bal",spanish:"Pie",cat:"Cuerpo",catIdx:0,example:"발이 아파요.",exTrans:"Me duele el pie."},
+{id:191,korean:"배",roman:"bae",spanish:"Barriga / Estómago",cat:"Cuerpo",catIdx:0,example:"배가 고파요.",exTrans:"Tengo hambre."},
+{id:192,korean:"등",roman:"deung",spanish:"Espalda",cat:"Cuerpo",catIdx:0,example:"등이 아파요.",exTrans:"Me duele la espalda."},
+{id:193,korean:"다리",roman:"dari",spanish:"Pierna",cat:"Cuerpo",catIdx:0,example:"다리가 길어요.",exTrans:"Tiene las piernas largas."},
+{id:194,korean:"산",roman:"san",spanish:"Montaña",cat:"Naturaleza",catIdx:2,example:"산에 올라가요.",exTrans:"Subo a la montaña."},
+{id:195,korean:"바다",roman:"bada",spanish:"Mar",cat:"Naturaleza",catIdx:2,example:"바다에 가고 싶어요.",exTrans:"Quiero ir al mar."},
+{id:196,korean:"강",roman:"gang",spanish:"Río",cat:"Naturaleza",catIdx:2,example:"강에서 낚시해요.",exTrans:"Pesco en el río."},
+{id:197,korean:"꽃",roman:"kkot",spanish:"Flor",cat:"Naturaleza",catIdx:2,example:"꽃이 예뻐요.",exTrans:"Las flores son bonitas."},
+{id:198,korean:"나무",roman:"namu",spanish:"Árbol",cat:"Naturaleza",catIdx:2,example:"나무가 높아요.",exTrans:"El árbol es alto."},
+{id:199,korean:"하늘",roman:"haneul",spanish:"Cielo",cat:"Naturaleza",catIdx:2,example:"하늘이 파래요.",exTrans:"El cielo está azul."},
+{id:200,korean:"비",roman:"bi",spanish:"Lluvia",cat:"Naturaleza",catIdx:2,example:"비가 와요.",exTrans:"Llueve."},
+{id:201,korean:"눈",roman:"nun",spanish:"Nieve",cat:"Naturaleza",catIdx:2,example:"눈이 와요.",exTrans:"Nieva."},
+{id:202,korean:"바람",roman:"baram",spanish:"Viento",cat:"Naturaleza",catIdx:2,example:"바람이 불어요.",exTrans:"Hace viento."},
+{id:203,korean:"태양",roman:"taeyang",spanish:"Sol",cat:"Naturaleza",catIdx:2,example:"태양이 밝아요.",exTrans:"El sol es brillante."},
+{id:204,korean:"컴퓨터",roman:"keompyuteo",spanish:"Ordenador",cat:"Tecnología",catIdx:1,example:"컴퓨터로 일해요.",exTrans:"Trabajo con el ordenador."},
+{id:205,korean:"인터넷",roman:"inteonet",spanish:"Internet",cat:"Tecnología",catIdx:1,example:"인터넷이 필요해요.",exTrans:"Necesito internet."},
+{id:206,korean:"이메일",roman:"imeil",spanish:"Correo electrónico",cat:"Tecnología",catIdx:1,example:"이메일을 보내요.",exTrans:"Envío un correo electrónico."},
+{id:207,korean:"사진",roman:"sajin",spanish:"Foto / Fotografía",cat:"Tecnología",catIdx:1,example:"사진을 찍어요.",exTrans:"Saco una foto."},
+{id:208,korean:"영상",roman:"yeongsang",spanish:"Vídeo",cat:"Tecnología",catIdx:1,example:"영상을 봐요.",exTrans:"Veo un vídeo."},
+{id:209,korean:"앱",roman:"aep",spanish:"Aplicación (app)",cat:"Tecnología",catIdx:1,example:"앱을 다운로드해요.",exTrans:"Descargo una app."},
+{id:210,korean:"버스",roman:"beoseu",spanish:"Autobús",cat:"Transporte",catIdx:3,example:"버스를 타요.",exTrans:"Tomo el autobús."},
+{id:211,korean:"택시",roman:"taeksi",spanish:"Taxi",cat:"Transporte",catIdx:3,example:"택시를 잡아요.",exTrans:"Paro un taxi."},
+{id:212,korean:"기차",roman:"gicha",spanish:"Tren",cat:"Transporte",catIdx:3,example:"기차로 여행해요.",exTrans:"Viajo en tren."},
+{id:213,korean:"비행기",roman:"bihaenggi",spanish:"Avión",cat:"Transporte",catIdx:3,example:"비행기를 타요.",exTrans:"Tomo el avión."},
+{id:214,korean:"자전거",roman:"jajeongeo",spanish:"Bicicleta",cat:"Transporte",catIdx:3,example:"자전거를 타요.",exTrans:"Monto en bicicleta."},
+{id:215,korean:"자동차",roman:"jadongcha",spanish:"Coche / Automóvil",cat:"Transporte",catIdx:3,example:"자동차로 가요.",exTrans:"Voy en coche."},
+{id:216,korean:"사랑",roman:"sarang",spanish:"Amor",cat:"Sentimientos",catIdx:4,example:"사랑해요.",exTrans:"Te quiero."},
+{id:217,korean:"기쁨",roman:"gippeum",spanish:"Alegría",cat:"Sentimientos",catIdx:4,example:"기쁨을 느껴요.",exTrans:"Siento alegría."},
+{id:218,korean:"걱정",roman:"geokjeong",spanish:"Preocupación",cat:"Sentimientos",catIdx:4,example:"걱정하지 마세요.",exTrans:"No se preocupe."},
+{id:219,korean:"희망",roman:"huimang",spanish:"Esperanza",cat:"Sentimientos",catIdx:4,example:"희망을 잃지 마요.",exTrans:"No pierdas la esperanza."},
+{id:220,korean:"화",roman:"hwa",spanish:"Enfado / Rabia",cat:"Sentimientos",catIdx:4,example:"화가 나요.",exTrans:"Estoy enfadado/a."},
+{id:221,korean:"씻다",roman:"ssitda",spanish:"Lavarse",cat:"Verbos",catIdx:1,example:"손을 씻어요.",exTrans:"Me lavo las manos."},
+{id:222,korean:"입다",roman:"ipda",spanish:"Ponerse (ropa)",cat:"Verbos",catIdx:1,example:"옷을 입어요.",exTrans:"Me pongo la ropa."},
+{id:223,korean:"벗다",roman:"beotda",spanish:"Quitarse (ropa)",cat:"Verbos",catIdx:1,example:"신발을 벗어요.",exTrans:"Me quito los zapatos."},
+{id:224,korean:"만들다",roman:"mandeulda",spanish:"Hacer / Fabricar",cat:"Verbos",catIdx:1,example:"음식을 만들어요.",exTrans:"Preparo la comida."},
+{id:225,korean:"찾다",roman:"chatda",spanish:"Buscar / Encontrar",cat:"Verbos",catIdx:1,example:"열쇠를 찾아요.",exTrans:"Busco las llaves."},
+{id:226,korean:"기다리다",roman:"gidarida",spanish:"Esperar",cat:"Verbos",catIdx:1,example:"버스를 기다려요.",exTrans:"Espero el autobús."},
+{id:227,korean:"시작하다",roman:"sijakhada",spanish:"Empezar / Comenzar",cat:"Verbos",catIdx:1,example:"수업이 시작해요.",exTrans:"La clase empieza."},
+{id:228,korean:"끝나다",roman:"kkeutnada",spanish:"Terminar / Acabar",cat:"Verbos",catIdx:1,example:"일이 끝났어요.",exTrans:"El trabajo ha terminado."},
+{id:229,korean:"생각하다",roman:"saenggakada",spanish:"Pensar",cat:"Verbos",catIdx:1,example:"그것에 대해 생각해요.",exTrans:"Pienso en eso."},
+{id:230,korean:"느끼다",roman:"neukkida",spanish:"Sentir",cat:"Verbos",catIdx:1,example:"행복을 느껴요.",exTrans:"Siento felicidad."},
+{id:231,korean:"깨끗하다",roman:"kkaekkeuthada",spanish:"Limpio",cat:"Adjetivos",catIdx:2,example:"방이 깨끗해요.",exTrans:"La habitación está limpia."},
+{id:232,korean:"더럽다",roman:"deoreopda",spanish:"Sucio",cat:"Adjetivos",catIdx:2,example:"옷이 더러워요.",exTrans:"La ropa está sucia."},
+{id:233,korean:"무겁다",roman:"mugeopda",spanish:"Pesado",cat:"Adjetivos",catIdx:2,example:"가방이 무거워요.",exTrans:"La mochila es pesada."},
+{id:234,korean:"가볍다",roman:"gabyeopda",spanish:"Ligero",cat:"Adjetivos",catIdx:2,example:"이 가방이 가벼워요.",exTrans:"Esta mochila es ligera."},
+{id:235,korean:"조용하다",roman:"joyonghada",spanish:"Tranquilo / Silencioso",cat:"Adjetivos",catIdx:2,example:"도서관이 조용해요.",exTrans:"La biblioteca está tranquila."},
+{id:236,korean:"시끄럽다",roman:"sikkeureopda",spanish:"Ruidoso",cat:"Adjetivos",catIdx:2,example:"거리가 시끄러워요.",exTrans:"La calle es ruidosa."},
+{id:237,korean:"따뜻하다",roman:"ttatteuthada",spanish:"Cálido / Tibio",cat:"Adjetivos",catIdx:2,example:"날씨가 따뜻해요.",exTrans:"El tiempo está cálido."},
+{id:238,korean:"시원하다",roman:"siwonhada",spanish:"Fresco / Refrescante",cat:"Adjetivos",catIdx:2,example:"날씨가 시원해요.",exTrans:"El tiempo está fresco."},
+{id:239,korean:"맵다",roman:"maepda",spanish:"Picante",cat:"Adjetivos",catIdx:2,example:"이 음식이 매워요.",exTrans:"Esta comida está picante."},
+{id:240,korean:"달다",roman:"dalda",spanish:"Dulce",cat:"Adjetivos",catIdx:2,example:"이 케이크가 달아요.",exTrans:"Este pastel está dulce."},
+{id:241,korean:"수업",roman:"sueop",spanish:"Clase / Lección",cat:"Escuela",catIdx:1,example:"수업이 재미있어요.",exTrans:"La clase es interesante."},
+{id:242,korean:"숙제",roman:"sukje",spanish:"Deberes / Tarea",cat:"Escuela",catIdx:1,example:"숙제를 해요.",exTrans:"Hago los deberes."},
+{id:243,korean:"시험",roman:"siheom",spanish:"Examen",cat:"Escuela",catIdx:1,example:"시험이 어려웠어요.",exTrans:"El examen fue difícil."},
+{id:244,korean:"회의",roman:"hoeui",spanish:"Reunión",cat:"Escuela",catIdx:1,example:"오후에 회의가 있어요.",exTrans:"Por la tarde tengo una reunión."},
+{id:245,korean:"발표",roman:"balpyo",spanish:"Presentación",cat:"Escuela",catIdx:1,example:"내일 발표가 있어요.",exTrans:"Mañana tengo una presentación."},
+{id:246,korean:"영화",roman:"yeonghwa",spanish:"Película",cat:"Ocio",catIdx:5,example:"영화를 보러 가요.",exTrans:"Voy a ver una película."},
+{id:247,korean:"음악",roman:"eumak",spanish:"Música",cat:"Ocio",catIdx:5,example:"음악을 들어요.",exTrans:"Escucho música."},
+{id:248,korean:"여행",roman:"yeohaeng",spanish:"Viaje",cat:"Ocio",catIdx:5,example:"한국 여행을 해요.",exTrans:"Viajo por Corea."},
+{id:249,korean:"운동",roman:"undong",spanish:"Deporte / Ejercicio",cat:"Ocio",catIdx:5,example:"운동을 좋아해요.",exTrans:"Me gusta el deporte."},
+{id:250,korean:"요리",roman:"yori",spanish:"Cocina / Cocinar",cat:"Ocio",catIdx:5,example:"요리를 배워요.",exTrans:"Aprendo a cocinar."},
+{id:251,korean:"독서",roman:"dokseo",spanish:"Lectura",cat:"Ocio",catIdx:5,example:"독서가 취미예요.",exTrans:"La lectura es mi hobby."},
+{id:252,korean:"게임",roman:"geim",spanish:"Videojuego",cat:"Ocio",catIdx:5,example:"게임을 해요.",exTrans:"Juego videojuegos."},
+{id:253,korean:"쇼핑",roman:"syoping",spanish:"Compras",cat:"Ocio",catIdx:5,example:"쇼핑을 좋아해요.",exTrans:"Me gusta ir de compras."},
+{id:254,korean:"산책",roman:"sanchek",spanish:"Paseo",cat:"Ocio",catIdx:5,example:"산책을 해요.",exTrans:"Doy un paseo."},
+{id:255,korean:"사진 찍기",roman:"sajin jjikgi",spanish:"Fotografía (hobby)",cat:"Ocio",catIdx:5,example:"사진 찍기를 좋아해요.",exTrans:"Me gusta la fotografía."},
+{id:256,korean:"주소",roman:"juso",spanish:"Dirección postal",cat:"Sustantivos",catIdx:0,example:"주소가 어떻게 돼요?",exTrans:"¿Cuál es su dirección?"},
+{id:257,korean:"전화번호",roman:"jeonhwabeonho",spanish:"Número de teléfono",cat:"Sustantivos",catIdx:0,example:"전화번호를 알려 주세요.",exTrans:"Dígame su número de teléfono."},
+{id:258,korean:"날",roman:"nal",spanish:"Día (coloquial)",cat:"Sustantivos",catIdx:0,example:"오늘 좋은 날이에요.",exTrans:"Hoy es un buen día."},
+{id:259,korean:"밤",roman:"bam",spanish:"Noche",cat:"Sustantivos",catIdx:0,example:"밤에 산책해요.",exTrans:"Doy un paseo por la noche."},
+{id:260,korean:"아침",roman:"achim",spanish:"Mañana (parte del día)",cat:"Sustantivos",catIdx:0,example:"아침을 먹어요.",exTrans:"Desayuno."},
+{id:261,korean:"점심",roman:"jeomsim",spanish:"Almuerzo",cat:"Sustantivos",catIdx:0,example:"점심을 먹어요.",exTrans:"Como al mediodía."},
+{id:262,korean:"저녁",roman:"jeonyeok",spanish:"Tarde / Cena",cat:"Sustantivos",catIdx:0,example:"저녁을 먹어요.",exTrans:"Ceno."},
+{id:263,korean:"계절",roman:"gyejeol",spanish:"Estación del año",cat:"Sustantivos",catIdx:0,example:"무슨 계절을 좋아해요?",exTrans:"¿Qué estación te gusta?"},
+{id:264,korean:"봄",roman:"bom",spanish:"Primavera",cat:"Sustantivos",catIdx:0,example:"봄이 와요.",exTrans:"Llega la primavera."},
+{id:265,korean:"여름",roman:"yeoreum",spanish:"Verano",cat:"Sustantivos",catIdx:0,example:"여름에 더워요.",exTrans:"En verano hace calor."},
+{id:266,korean:"가을",roman:"gaeul",spanish:"Otoño",cat:"Sustantivos",catIdx:0,example:"가을에 단풍이 예뻐요.",exTrans:"En otoño el follaje es bonito."},
+{id:267,korean:"겨울",roman:"gyeoul",spanish:"Invierno",cat:"Sustantivos",catIdx:0,example:"겨울에 눈이 와요.",exTrans:"En invierno nieva."},
+{id:268,korean:"색깔",roman:"saekkal",spanish:"Color",cat:"Sustantivos",catIdx:0,example:"무슨 색깔을 좋아해요?",exTrans:"¿Qué color te gusta?"},
+{id:269,korean:"크기",roman:"keugi",spanish:"Tamaño",cat:"Sustantivos",catIdx:0,example:"크기가 어떻게 돼요?",exTrans:"¿Qué talla/tamaño es?"},
+{id:270,korean:"종류",roman:"jongnyu",spanish:"Tipo / Clase",cat:"Sustantivos",catIdx:0,example:"어떤 종류예요?",exTrans:"¿Qué tipo es?"},
+{id:271,korean:"이유",roman:"iyu",spanish:"Razón / Motivo",cat:"Sustantivos",catIdx:0,example:"이유가 뭐예요?",exTrans:"¿Cuál es la razón?"},
+{id:272,korean:"문제",roman:"munje",spanish:"Problema",cat:"Sustantivos",catIdx:0,example:"문제가 있어요.",exTrans:"Hay un problema."},
+{id:273,korean:"방법",roman:"bangbeop",spanish:"Método / Manera",cat:"Sustantivos",catIdx:0,example:"방법을 알아요?",exTrans:"¿Sabes el método?"},
+{id:274,korean:"결과",roman:"gyeolgwa",spanish:"Resultado",cat:"Sustantivos",catIdx:0,example:"결과가 좋아요.",exTrans:"El resultado es bueno."},
+{id:275,korean:"경험",roman:"gyeongheum",spanish:"Experiencia",cat:"Sustantivos",catIdx:0,example:"좋은 경험이었어요.",exTrans:"Fue una buena experiencia."},
+{id:276,korean:"생각",roman:"saenggak",spanish:"Pensamiento / Idea",cat:"Sustantivos",catIdx:0,example:"좋은 생각이에요!",exTrans:"¡Es una buena idea!"},
+{id:277,korean:"꿈",roman:"kkum",spanish:"Sueño / Meta",cat:"Sustantivos",catIdx:0,example:"꿈을 포기하지 마요.",exTrans:"No abandones tu sueño."},
+{id:278,korean:"목표",roman:"mokpyo",spanish:"Objetivo / Meta",cat:"Sustantivos",catIdx:0,example:"목표를 세워요.",exTrans:"Establezco un objetivo."},
+{id:279,korean:"습관",roman:"seupgwan",spanish:"Hábito / Costumbre",cat:"Sustantivos",catIdx:0,example:"좋은 습관을 만들어요.",exTrans:"Creo buenos hábitos."},
+{id:280,korean:"배우다",roman:"baeuda",spanish:"Aprender",cat:"Verbos",catIdx:1,example:"한국어를 배워요.",exTrans:"Aprendo coreano."},
+{id:281,korean:"가르치다",roman:"gareuchida",spanish:"Enseñar",cat:"Verbos",catIdx:1,example:"학생들에게 가르쳐요.",exTrans:"Enseño a los estudiantes."},
+{id:282,korean:"도와주다",roman:"dowajuda",spanish:"Ayudar",cat:"Verbos",catIdx:1,example:"도와줘서 고마워요.",exTrans:"Gracias por ayudar."},
+{id:283,korean:"물어보다",roman:"mureoboda",spanish:"Preguntar",cat:"Verbos",catIdx:1,example:"선생님께 물어봐요.",exTrans:"Le pregunto al profesor."},
+{id:284,korean:"대답하다",roman:"daedaphada",spanish:"Responder",cat:"Verbos",catIdx:1,example:"질문에 대답해요.",exTrans:"Respondo a la pregunta."},
+{id:285,korean:"설명하다",roman:"seolmyeonghada",spanish:"Explicar",cat:"Verbos",catIdx:1,example:"천천히 설명해 주세요.",exTrans:"Explíqueme despacio, por favor."},
+{id:286,korean:"이해하다",roman:"ihaehada",spanish:"Entender / Comprender",cat:"Verbos",catIdx:1,example:"이해했어요?",exTrans:"¿Has entendido?"},
+{id:287,korean:"연습하다",roman:"yeonseuphada",spanish:"Practicar",cat:"Verbos",catIdx:1,example:"매일 연습해요.",exTrans:"Practico todos los días."},
+{id:288,korean:"노력하다",roman:"noryeokhada",spanish:"Esforzarse",cat:"Verbos",catIdx:1,example:"열심히 노력해요.",exTrans:"Me esfuerzo mucho."},
+{id:289,korean:"성공하다",roman:"seonggonghada",spanish:"Tener éxito",cat:"Verbos",catIdx:1,example:"꼭 성공할 거예요.",exTrans:"Seguro que tendrás éxito."},
+{id:290,korean:"실패하다",roman:"silpaehada",spanish:"Fracasar",cat:"Verbos",catIdx:1,example:"실패해도 괜찮아요.",exTrans:"Está bien fracasar."},
+{id:291,korean:"포기하다",roman:"pogihada",spanish:"Rendirse / Abandonar",cat:"Verbos",catIdx:1,example:"포기하지 마세요.",exTrans:"No se rinda."},
+{id:292,korean:"계속하다",roman:"gyesokhada",spanish:"Continuar / Seguir",cat:"Verbos",catIdx:1,example:"계속 공부해요.",exTrans:"Sigo estudiando."},
+{id:293,korean:"선택하다",roman:"seontaekada",spanish:"Elegir / Escoger",cat:"Verbos",catIdx:1,example:"잘 선택해요.",exTrans:"Elige bien."},
+{id:294,korean:"준비하다",roman:"junbihada",spanish:"Preparar / Prepararse",cat:"Verbos",catIdx:1,example:"시험을 준비해요.",exTrans:"Me preparo para el examen."},
+{id:295,korean:"확인하다",roman:"hwagiinhada",spanish:"Verificar / Confirmar",cat:"Verbos",catIdx:1,example:"예약을 확인해요.",exTrans:"Confirmo la reserva."},
+{id:296,korean:"변하다",roman:"byeonhada",spanish:"Cambiar",cat:"Verbos",catIdx:1,example:"날씨가 변해요.",exTrans:"El tiempo cambia."},
+{id:297,korean:"나누다",roman:"nanuda",spanish:"Compartir / Dividir",cat:"Verbos",catIdx:1,example:"음식을 나눠요.",exTrans:"Compartimos la comida."},
+{id:298,korean:"즐기다",roman:"jeulgida",spanish:"Disfrutar",cat:"Verbos",catIdx:1,example:"여행을 즐겨요.",exTrans:"Disfruto del viaje."},
+{id:299,korean:"웃다",roman:"utda",spanish:"Reír / Sonreír",cat:"Verbos",catIdx:1,example:"많이 웃어요.",exTrans:"Ríe mucho."},
+];
+// ═══════════════════════════════════════════════════
+// STORAGE & SM-2
+// ═══════════════════════════════════════════════════
+const SK='korean_rpg_v1';
+function loadS(){try{return JSON.parse(localStorage.getItem(SK)||'{}')}catch{return{}}}
+function saveS(s){try{localStorage.setItem(SK,JSON.stringify(s))}catch{}}
+function getG(){const d=loadS();return d._game||{totalXP:0,dayXP:0,dayXPDate:'',level:1,theme:'default',testsCompleted:[],unlockedThemes:['default'],lastSession:null,testsPending:0,totalSessions:0,perfectSessions:0,claimedMissions:[]};}
+function saveG(g){const d=loadS();d._game=g;saveS(d);}
+function resetAll(){if(!confirm('¿Resetear todo el progreso?'))return;localStorage.removeItem(SK);location.reload();}
+const INITIAL_ACTIVE=50,UNLOCK_RATIO=3;
+function initCard(){return{interval:0,repetitions:0,easeFactor:2.5,dueDate:Date.now(),status:'new'};}
+function getCS(id){const s=loadS();return s[id]||initCard();}
+function setCS(id,cs){const s=loadS();s[id]=cs;saveS(s);}
+function unlockedCount(){const s=loadS();const m=CARD_POOL.filter(c=>(s[c.id]||{}).status==='mastered').length;return Math.min(INITIAL_ACTIVE+Math.floor(m/UNLOCK_RATIO),CARD_POOL.length);}
+function activeCards(){return CARD_POOL.slice(0,unlockedCount());}
+function sm2(cs,q){
+  const now=Date.now(),D=86400000;let{interval,repetitions,easeFactor}=cs;
+  if(q===0)return{...cs,interval:0,repetitions:0,easeFactor,dueDate:now+60000,status:'learning'};
+  easeFactor+=0.1-(5-q)*(0.08+(5-q)*0.02);if(easeFactor<1.3)easeFactor=1.3;
+  if(q===3){interval=Math.max(1,Math.round(interval*1.2));}
+  else{repetitions++;if(repetitions===1)interval=1;else if(repetitions===2)interval=6;else interval=Math.round(interval*easeFactor);}
+  let status='review';if(interval>=21)status='mastered';if(repetitions<=1)status='learning';
+  return{interval,repetitions,easeFactor,dueDate:now+interval*D,status};
+}
+function prevIv(cs,q){const d=sm2(cs,q).interval;if(d===0)return'<1m';if(d===1)return'1d';if(d<7)return d+'d';if(d<30)return Math.round(d/7)+'s';return Math.round(d/30)+'m';}
+// ═══════════════════════════════════════════════════
+// XP & LEVELS
+// ═══════════════════════════════════════════════════
+const LEVELS=[
+  {n:1,name:'Aprendiz de Hangul',avatar:'🧙',xpTo:100},
+  {n:2,name:'Estudiante Novato',avatar:'📚',xpTo:250},
+  {n:3,name:'Viajero del Idioma',avatar:'🗺️',xpTo:500},
+  {n:4,name:'Hablante en Prácticas',avatar:'💬',xpTo:900},
+  {n:5,name:'Explorador Coreano',avatar:'⚔️',xpTo:1500},
+  {n:6,name:'Maestro de Vocabulario',avatar:'🏆',xpTo:2500},
+  {n:7,name:'Sabio del Hangul',avatar:'🌟',xpTo:4000},
+  {n:8,name:'Leyenda Coreana',avatar:'👑',xpTo:99999},
+];
+function getLevel(xp){for(let i=LEVELS.length-1;i>=0;i--){if(xp>=(i===0?0:LEVELS[i-1].xpTo))return LEVELS[i];}return LEVELS[0];}
+function xpForQ(q){return q===0?0:q===3?5:q===4?10:15;}
+const DAY_XP_GOAL=50,TOTAL_XP_GOAL=300;
+function addXP(amount){
+  if(amount<=0)return;const g=getG();
+  const today=new Date().toDateString();
+  if(g.dayXPDate!==today){g.dayXP=0;g.dayXPDate=today;}
+  const prevL=getLevel(g.totalXP);g.totalXP+=amount;g.dayXP+=amount;
+  const newL=getLevel(g.totalXP);saveG(g);
+  updateExpBars();updatePlayerBar();showXPPop(amount);
+  if(newL.n>prevL.n)showToast('toast-lvl','🎉 ¡NIVEL '+newL.n+'!',newL.name,3500);
+}
+function showXPPop(amount){
+  const pop=document.createElement('div');pop.className='xp-pop';pop.textContent='+'+amount+' XP';
+  pop.style.cssText=`left:${30+Math.random()*40}%;top:${40+Math.random()*20}%;position:fixed;`;
+  document.body.appendChild(pop);setTimeout(()=>pop.remove(),1300);
+}
+function updateExpBars(){
+  const g=getG();const today=new Date().toDateString();
+  const dayXP=g.dayXPDate===today?g.dayXP:0;
+  el('exp-day-fill').style.width=Math.min(dayXP/DAY_XP_GOAL*100,100)+'%';
+  el('exp-total-fill').style.width=Math.min(g.totalXP/TOTAL_XP_GOAL*100,100)+'%';
+  el('exp-day-val').textContent=dayXP+' / '+DAY_XP_GOAL+' XP';
+  el('exp-total-val').textContent=g.totalXP+' / '+TOTAL_XP_GOAL+' XP';
+}
+function updatePlayerBar(){
+  const g=getG();const lv=getLevel(g.totalXP);
+  const prev=lv.n>1?LEVELS[lv.n-2].xpTo:0;
+  const pct=Math.min((g.totalXP-prev)/(lv.xpTo-prev)*100,100);
+  el('player-avatar').textContent=lv.avatar;el('player-name').textContent=lv.name;
+  el('player-level-label').textContent='Nivel '+lv.n;el('player-xp-text').textContent=g.totalXP+' / '+lv.xpTo+' XP';
+  el('player-xp-fill').style.width=pct+'%';
+}
+// ═══════════════════════════════════════════════════
+// SESSION
+// ═══════════════════════════════════════════════════
+let sessionDeck=[],sessionIdx=0,sessionDone=0,sessionAgain=0,isFlipped=false,answered=false,newlyUnlocked=[];
+function isDue(cs){return cs.dueDate<=Date.now();}
+function buildSession(){
+  const s=loadS();const ac=activeCards();const due=[],nw=[];
+  ac.forEach(c=>{const cs=s[c.id]||initCard();if(cs.status==='new')nw.push(c);else if(isDue(cs))due.push(c);});
+  shuf(due);shuf(nw);sessionDeck=[...due,...nw.slice(0,10)];
+  sessionIdx=0;sessionDone=0;sessionAgain=0;newlyUnlocked=[];
+}
+function shuf(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
+function masteredCount(){const s=loadS();return CARD_POOL.filter(c=>(s[c.id]||{}).status!=='new').length;}
+// ═══════════════════════════════════════════════════
+// MISSIONS
+// ═══════════════════════════════════════════════════
+function getMissions(){
+  const s=loadS();const ac=activeCards();
+  const mastered=CARD_POOL.filter(c=>(s[c.id]||{}).status==='mastered').length;
+  const learned=ac.filter(c=>(s[c.id]||{}).status!=='new').length;
+  const cats=[...new Set(CARD_POOL.map(c=>c.cat))].slice(0,4);
+  const catMs=cats.map(cat=>{
+    const all=CARD_POOL.filter(c=>c.cat===cat);
+    const m=all.filter(c=>(s[c.id]||{}).status==='mastered').length;
+    return{id:'cat_'+cat,name:'Domina: '+cat,desc:'Domina todas las palabras de "'+cat+'".',progress:m,total:all.length,xp:50,complete:m>=all.length,locked:false};
+  });
+  const g=getG();
+  return[
+    {id:'learn10',name:'Primeros pasos',desc:'Aprende tus primeras 10 palabras.',progress:Math.min(learned,10),total:10,xp:20,complete:learned>=10,locked:false},
+    {id:'learn25',name:'Guerrero del vocabulario',desc:'Aprende 25 palabras.',progress:Math.min(learned,25),total:25,xp:40,complete:learned>=25,locked:learned<10},
+    {id:'learn50',name:'Maestro principiante',desc:'Aprende 50 palabras.',progress:Math.min(learned,50),total:50,xp:80,complete:learned>=50,locked:learned<25},
+    {id:'master10',name:'Memoria de acero',desc:'Domina 10 palabras (intervalo ≥21 días).',progress:Math.min(mastered,10),total:10,xp:60,complete:mastered>=10,locked:false},
+    {id:'master50',name:'Campeón del SR',desc:'Domina 50 palabras.',progress:Math.min(mastered,50),total:50,xp:150,complete:mastered>=50,locked:mastered<10},
+    {id:'session3',name:'Racha de 3',desc:'Completa 3 sesiones de estudio.',progress:Math.min(g.totalSessions||0,3),total:3,xp:30,complete:(g.totalSessions||0)>=3,locked:false},
+    {id:'noerror',name:'Sesión perfecta',desc:'Completa una sesión sin ningún "Otra vez".',progress:(g.perfectSessions||0)>0?1:0,total:1,xp:35,complete:(g.perfectSessions||0)>0,locked:false},
+    ...catMs,
+  ];
+}
+function renderMissions(){
+  const ms=getMissions();const list=el('missions-list');list.innerHTML='';
+  ms.forEach(m=>{
+    const pct=Math.min(m.progress/m.total*100,100);
+    const div=document.createElement('div');div.className='mission-card'+(m.complete?' complete':m.locked?' locked':'');
+    div.innerHTML=`<div class="mission-top"><div class="mission-name">${m.name}</div><div class="mission-xp">+${m.xp} XP</div></div>
+      <div class="mission-desc">${m.desc}</div>
+      <div class="mission-bar-wrap"><div class="mission-bar-fill" style="width:${pct}%"></div></div>
+      <div class="mission-progress-text">${m.progress} / ${m.total}</div>
+      ${m.complete?'<div class="mission-badge">✅</div>':m.locked?'<div class="mission-badge">🔒</div>':''}`;
+    list.appendChild(div);
+  });
+}
+function checkMissionRewards(){
+  const g=getG();const ms=getMissions();const claimed=g.claimedMissions||[];let gained=0;
+  ms.forEach(m=>{if(m.complete&&!claimed.includes(m.id)){claimed.push(m.id);gained+=m.xp;}});
+  if(gained>0){g.claimedMissions=claimed;saveG(g);addXP(gained);showToast('toast-lvl','🏆 ¡Misión completada!','+'+gained+' XP de bonus',3000);}
+}
+// ═══════════════════════════════════════════════════
+// TEST SYSTEM
+// ═══════════════════════════════════════════════════
+let testCards=[],testIdx=0,testCorrect=0,testAnswered=false;
+function testsUnlocked(){return Math.floor(masteredCount()/10);}
+function checkTestUnlock(prev){
+  const now=masteredCount();if(Math.floor(now/10)>Math.floor(prev/10)){
+    const g=getG();g.testsPending=(g.testsPending||0)+1;saveG(g);
+    showToast('toast-test','⚔️ ¡TEST DISPONIBLE!','¡10 palabras aprendidas! Un nuevo desafío te espera.',3500);
+    updateTestPanel();
+  }
+}
+function updateTestPanel(){
+  const g=getG();const ac=activeCards().filter(c=>getCS(c.id).status!=='new');const pending=g.testsPending||0;
+  el('test-no-test').style.display=ac.length<10?'block':'none';
+  el('test-available-box').style.display=(ac.length>=10&&pending>0)?'block':'none';
+  el('test-running').style.display='none';el('test-result-box').style.display='none';
+  if(ac.length>=10&&pending>0)el('test-avail-desc').textContent=`Tienes ${pending} test${pending>1?'s':''} disponible${pending>1?'s':''}. Supera el 70% para ganar recompensas y desbloquear temas.`;
+}
+function startTest(){
+  const ac=activeCards().filter(c=>getCS(c.id).status!=='new');if(ac.length<4)return;
+  testCards=shufArr(ac).slice(0,Math.min(10,ac.length));testIdx=0;testCorrect=0;testAnswered=false;
+  el('test-available-box').style.display='none';el('test-running').style.display='block';el('test-result-box').style.display='none';
+  renderTestQ();
+}
+function shufArr(a){const b=[...a];shuf(b);return b;}
+function renderTestQ(){
+  if(testIdx>=testCards.length){showTestResult();return;}
+  const card=testCards[testIdx];testAnswered=false;
+  el('tq-num').textContent=`Pregunta ${testIdx+1} / ${testCards.length}`;
+  el('tq-word').textContent=card.korean;el('tq-sub').textContent=card.roman+' · '+card.cat;
+  const wrong=shufArr(activeCards().filter(c=>c.id!==card.id)).slice(0,3);
+  const opts=shufArr([card,...wrong]);const optsEl=el('tq-opts');optsEl.innerHTML='';
+  opts.forEach(opt=>{const btn=document.createElement('div');btn.className='test-opt';btn.textContent=opt.spanish;btn.onclick=()=>selectTestAnswer(btn,opt.id===card.id);optsEl.appendChild(btn);});
+}
+function selectTestAnswer(btn,correct){
+  if(testAnswered)return;testAnswered=true;
+  if(correct){testCorrect++;btn.classList.add('correct');}
+  else{btn.classList.add('wrong');el('tq-opts').querySelectorAll('.test-opt').forEach(b=>{if(b.textContent===testCards[testIdx].spanish)b.classList.add('correct');});}
+  setTimeout(()=>{testIdx++;renderTestQ();},800);
+}
+function showTestResult(){
+  el('test-running').style.display='none';const box=el('test-result-box');box.classList.add('show');box.style.display='block';
+  const pct=Math.round(testCorrect/testCards.length*100);const passed=pct>=70;
+  el('tr-emoji').textContent=passed?'🏆':'📚';
+  el('tr-score').textContent=testCorrect+' / '+testCards.length+' ('+pct+'%)';
+  el('tr-msg').textContent=passed?'¡Superado! Demuestras un gran dominio del vocabulario.':'Sigue practicando. ¡Puedes mejorar!';
+  const g=getG();
+  if(passed){
+    const tc=g.testsCompleted||[];tc.push(Date.now());g.testsCompleted=tc;
+    g.testsPending=Math.max(0,(g.testsPending||0)-1);
+    const xpG=30+testCorrect*5;saveG(g);addXP(xpG);
+    const ut=checkThemeUnlock(tc.length);
+    el('tr-reward').innerHTML=`+${xpG} XP ⚡${ut?'<br>🎨 ¡Tema desbloqueado: <strong>'+ut+'</strong>!':''}`;
+  } else {g.testsPending=Math.max(0,(g.testsPending||0)-1);saveG(g);el('tr-reward').textContent='Completa más revisiones e inténtalo de nuevo.';}
+}
+const THEME_UNLOCKS={1:'theme-fire',2:'theme-ocean',3:'theme-sakura',4:'theme-gold',5:'theme-cyber'};
+const THEME_NAMES={'default':'Arcano','theme-fire':'Fuego','theme-ocean':'Océano','theme-sakura':'Sakura','theme-gold':'Oro','theme-cyber':'Cyber'};
+function checkThemeUnlock(count){
+  const g=getG();const theme=THEME_UNLOCKS[count];
+  if(theme&&!(g.unlockedThemes||[]).includes(theme)){g.unlockedThemes=[...(g.unlockedThemes||['default']),theme];saveG(g);return THEME_NAMES[theme];}return null;
+}
+function finishTest(){el('test-result-box').classList.remove('show');el('test-result-box').style.display='none';updateTestPanel();renderThemes();}
+// ═══════════════════════════════════════════════════
+// THEMES
+// ═══════════════════════════════════════════════════
+const THEME_PREVIEWS={'default':'linear-gradient(90deg,#c084fc,#fbbf24)','theme-fire':'linear-gradient(90deg,#ff6b35,#ff9f1c)','theme-ocean':'linear-gradient(90deg,#06d6a0,#74b9ff)','theme-sakura':'linear-gradient(90deg,#fb7185,#e879f9)','theme-gold':'linear-gradient(90deg,#fbbf24,#f59e0b)','theme-cyber':'linear-gradient(90deg,#00fff5,#ff00a0)'};
+function renderThemes(){
+  let s=el('theme-section');if(!s){s=document.createElement('div');s.id='theme-section';el('panel-overview').appendChild(s);}
+  const g=getG();const unlocked=g.unlockedThemes||['default'];const current=g.theme||'default';
+  s.innerHTML=`<div class="sec-title">🎨 Personalización</div>
+    <div class="theme-lock-msg">Supera tests para desbloquear temas · ${unlocked.length}/${Object.keys(THEME_PREVIEWS).length} desbloqueados</div>
+    <div class="themes-grid" id="themes-grid"></div>`;
+  const grid=s.querySelector('#themes-grid');
+  Object.entries(THEME_PREVIEWS).forEach(([key,grad])=>{
+    const isU=unlocked.includes(key);const btn=document.createElement('div');
+    btn.className='theme-btn'+(current===key?' active-theme':'')+(isU?'':' locked-theme');
+    btn.innerHTML=`<div class="theme-preview" style="background:${grad}"></div>${THEME_NAMES[key]}${isU?'':'<br>🔒'}`;
+    if(isU)btn.onclick=()=>applyTheme(key);grid.appendChild(btn);
+  });
+}
+function applyTheme(theme){const g=getG();g.theme=theme;saveG(g);document.body.className=theme==='default'?'':theme;renderThemes();}
+// ═══════════════════════════════════════════════════
+// NEXT SESSION REMINDER
+// ═══════════════════════════════════════════════════
+function buildNextSessionPlan(){
+  const now=Date.now();const ac=activeCards();const s=loadS();
+  const dueTimes=ac.map(c=>({card:c,cs:s[c.id]||initCard()})).filter(x=>x.cs.status!=='new'&&x.cs.dueDate>now).map(x=>x.cs.dueDate).sort((a,b)=>a-b);
+  const items=[];
+  if(dueTimes.length===0){items.push({time:'Ahora',desc:'¡Todas las cartas activas están al día!'});}
+  else{const h=Math.round((dueTimes[0]-now)/3600000);if(h<1)items.push({time:'<1h',desc:'Primera revisión pendiente muy pronto'});else if(h<24)items.push({time:h+'h',desc:'Primera revisión — mantén el ritmo diario'});else items.push({time:Math.round(h/24)+'d',desc:'Primera revisión programada'});}
+  items.push({time:'Cada día',desc:'10-15 min diarios > sesiones largas semanales'});
+  items.push({time:'Mañana',desc:'Revisa al despertar — la memoria consolida durante el sueño'});
+  return items;
+}
+// ═══════════════════════════════════════════════════
+// CARD DISPLAY
+// ═══════════════════════════════════════════════════
+function srsClass(s){return{new:'srs-new',learning:'srs-learning',review:'srs-review',mastered:'srs-mastered'}[s]||'srs-new';}
+function srsText(s){return{new:'🆕 Nueva',learning:'📖 Aprend.',review:'🔄 Revisión',mastered:'⭐ Dominada'}[s]||'🆕';}
+function el(id){return document.getElementById(id);}
+function updateStats(){
+  const s=loadS();const ac=activeCards();let nN=0,nL=0,nR=0,nM=0;
+  ac.forEach(c=>{const cs=s[c.id]||initCard();if(cs.status==='new')nN++;else if(cs.status==='learning')nL++;else if(cs.status==='review')nR++;else if(cs.status==='mastered')nM++;});
+  const tM=CARD_POOL.filter(c=>(s[c.id]||{}).status==='mastered').length;const tU=ac.length;
+  el('s-new').textContent=nN;el('s-learn').textContent=nL;el('s-done').textContent=sessionDone;el('s-again').textContent=sessionAgain;
+  el('ov-unlocked').textContent=tU;el('ov-mastered').textContent=nM;el('ov-learning').textContent=nL;el('ov-review').textContent=nR;
+  el('gb-mastered').style.width=(tM/300*100)+'%';el('gb-active').style.width=((tU-tM)/300*100)+'%';
+  el('gp-text').textContent=`${tM} ⭐ · ${tU} 🔓`;
+  updateExpBars();updatePlayerBar();
+}
+function renderDots(){
+  const c=el('dots');c.innerHTML='';
+  sessionDeck.forEach((_,i)=>{const d=document.createElement('div');d.className='dot'+(i===sessionIdx?' current':'');d.id='dot-'+i;c.appendChild(d);});
+}
+function updDot(i,cls){const d=el('dot-'+i);if(d){d.classList.remove('current');d.classList.add(cls);}}
+function loadCard(){
+  if(sessionIdx>=sessionDeck.length){showResults();return;}
+  const card=sessionDeck[sessionIdx];const cs=getCS(card.id);
+  isFlipped=false;answered=false;el('card').classList.remove('flipped');el('rate-btns').style.display='none';el('tap-hint').style.display='flex';
+  const sl=srsText(cs.status),sc=srsClass(cs.status);
+  ['f-srs','b-srs'].forEach(id=>{const e=el(id);e.textContent=sl;e.className='srs-pill '+sc;});
+  ['f-cat','b-cat'].forEach(id=>{const e=el(id);e.className='card-cat cat-'+card.catIdx;e.textContent=card.cat;});
+  el('f-korean').textContent=card.korean;el('f-roman').textContent=card.roman;el('b-spanish').textContent=card.spanish;
+  el('b-example').innerHTML=`<span class="kr-ex">${card.example}</span>${card.exTrans}`;
+  el('next-rev').textContent=(cs.status==='review'||cs.status==='mastered')?`Intervalo: ${cs.interval}d`:'';
+  el('iv0').textContent=prevIv(cs,0);el('iv3').textContent=prevIv(cs,3);el('iv4').textContent=prevIv(cs,4);el('iv5').textContent=prevIv(cs,5);
+  renderDots();updateStats();
+}
+function handleCardClick(){if(answered)return;if(!isFlipped){el('card').classList.add('flipped');el('rate-btns').style.display='flex';el('tap-hint').style.display='none';isFlipped=true;}}
+function checkUnlocks(prevM){
+  const s=loadS();const newM=CARD_POOL.filter(c=>(s[c.id]||{}).status==='mastered').length;
+  if(newM<=prevM)return;
+  const prevU=INITIAL_ACTIVE+Math.floor(prevM/UNLOCK_RATIO);const nowU=Math.min(INITIAL_ACTIVE+Math.floor(newM/UNLOCK_RATIO),CARD_POOL.length);
+  for(let i=prevU;i<nowU;i++){if(CARD_POOL[i]){newlyUnlocked.push(CARD_POOL[i]);showToast('toast-unlock',CARD_POOL[i].korean+' · '+CARD_POOL[i].roman,'Nueva: '+CARD_POOL[i].spanish,3000);}}
+}
+function rate(q){
+  if(answered)return;answered=true;
+  const card=sessionDeck[sessionIdx];const cs=getCS(card.id);
+  const prevM=CARD_POOL.filter(c=>(loadS()[c.id]||{}).status==='mastered').length;
+  const prevL=masteredCount();const newCs=sm2(cs,q);setCS(card.id,newCs);
+  checkUnlocks(prevM);addXP(xpForQ(q));checkTestUnlock(prevL);sessionDone++;
+  if(q===0){sessionAgain++;updDot(sessionIdx,'again');const ri=Math.min(sessionIdx+5,sessionDeck.length);sessionDeck.splice(ri,0,card);}
+  else updDot(sessionIdx,q===5?'easy':q===4?'good':'hard');
+  setTimeout(()=>{sessionIdx++;if(sessionIdx>=sessionDeck.length){showResults();return;}
+    const sc=el('scene');sc.style.opacity='0';sc.style.transform='scale(0.96)';sc.style.transition='all 0.18s';
+    setTimeout(()=>{loadCard();sc.style.opacity='1';sc.style.transform='scale(1)';},180);},220);
+}
+function skipCard(){
+  if(sessionIdx>=sessionDeck.length-1)return;const sk=sessionDeck.splice(sessionIdx,1)[0];sessionDeck.push(sk);
+  const sc=el('scene');sc.style.opacity='0';sc.style.transform='scale(0.96)';sc.style.transition='all 0.18s';
+  setTimeout(()=>{loadCard();sc.style.opacity='1';sc.style.transform='scale(1)';},180);
+}
+function showResults(){
+  ['scene','rate-btns','tap-hint','btn-skip','dots','next-rev'].forEach(id=>{const e=el(id);if(e)e.style.display='none';});
+  const g=getG();const total=sessionDone,pct=total>0?Math.round((total-sessionAgain)/total*100):0;
+  let emoji,title;if(pct>=90){emoji='🏆';title='¡Legendario!';}else if(pct>=70){emoji='⚔️';title='¡Victoria!';}else if(pct>=50){emoji='💪';title='¡Buen combate!';}else{emoji='📚';title='¡Sigue entrenando!';}
+  el('r-emoji').textContent=emoji;el('r-title').textContent=title;el('r-score').textContent=(total-sessionAgain)+' / '+total;el('r-sub').textContent=pct+'% de precisión · '+sessionDone+' cartas';
+  g.totalSessions=(g.totalSessions||0)+1;if(sessionAgain===0&&sessionDone>0)g.perfectSessions=(g.perfectSessions||0)+1;g.lastSession=Date.now();saveG(g);
+  const nM=CARD_POOL.filter(c=>(loadS()[c.id]||{}).status==='mastered').length;
+  let note=`⭐ ${nM}/300 dominadas · 🔓 ${unlockedCount()} desbloqueadas`;
+  if(newlyUnlocked.length>0)note+=`\n🎉 Nuevas: `+newlyUnlocked.map(c=>c.korean).join(', ');
+  el('r-note').textContent=note;
+  const plan=buildNextSessionPlan();
+  el('nsr-items').innerHTML=plan.map(p=>`<div class="nsr-item"><span class="nsr-time">${p.time}</span><span class="nsr-desc">${p.desc}</span></div>`).join('');
+  el('results').classList.add('show');checkMissionRewards();updateStats();renderOverviewPanel();
+}
+function restartSession(){
+  el('results').classList.remove('show');['scene','tap-hint','btn-skip','dots','next-rev'].forEach(id=>{const e=el(id);if(e)e.style.display='';});
+  buildSession();if(sessionDeck.length===0){el('next-rev').textContent='✅ Sin cartas pendientes. ¡Vuelve más tarde!';['scene','btn-skip','dots'].forEach(id=>el(id).style.display='none');return;}loadCard();
+}
+// ═══════════════════════════════════════════════════
+// OVERVIEW & ALL PANELS
+// ═══════════════════════════════════════════════════
+function renderOverviewPanel(){
+  updateStats();const s=loadS();const list=el('queue-list');list.innerHTML='';
+  const up=activeCards().map(c=>({card:c,cs:s[c.id]||initCard()})).filter(x=>x.cs.status!=='new'&&x.cs.dueDate>Date.now()).sort((a,b)=>a.cs.dueDate-b.cs.dueDate).slice(0,8);
+  if(up.length===0){list.innerHTML='<div style="text-align:center;color:var(--muted);font-size:10px;padding:14px">No hay revisiones próximas.</div>';return;}
+  up.forEach(({card,cs})=>{
+    const h=Math.round((cs.dueDate-Date.now())/3600000);const when=h<1?'Pronto':h<24?`~${h}h`:`~${Math.round(h/24)}d`;
+    const qi=document.createElement('div');qi.className='qi';
+    qi.innerHTML=`<div class="qi-kr">${card.korean}</div><div class="qi-info"><div class="qi-es">${card.spanish}</div><div class="qi-meta">${card.cat} · ${when}</div></div><div class="qi-badge ${srsClass(cs.status)}">${srsText(cs.status)}</div>`;
+    list.appendChild(qi);
+  });
+}
+function renderAllCards(){
+  const s=loadS();const list=el('all-list');list.innerHTML='';const uc=unlockedCount();
+  CARD_POOL.forEach((card,i)=>{
+    const locked=i>=uc;const cs=s[card.id]||initCard();const qi=document.createElement('div');qi.className='qi'+(locked?' qi-locked':'');
+    qi.innerHTML=locked?`<div class="qi-kr" style="filter:blur(4px)">???</div><div class="qi-info"><div class="qi-es" style="filter:blur(5px)">Bloqueada</div><div class="qi-meta">🔒 Domina más</div></div><div class="qi-badge srs-new">🔒</div>`:
+      `<div class="qi-kr">${card.korean}</div><div class="qi-info"><div class="qi-es">${card.spanish} <span style="font-size:9px;color:var(--muted)">· ${card.roman}</span></div><div class="qi-meta">${card.cat}</div></div><div class="qi-badge ${srsClass(cs.status)}">${srsText(cs.status)}</div>`;
+    list.appendChild(qi);
+  });
+}
+// ═══════════════════════════════════════════════════
+// TOASTS
+// ═══════════════════════════════════════════════════
+let toastQ=[],toastBusy=false;
+function showToast(id,title,msg,dur){toastQ.push({id,title,msg,dur});if(!toastBusy)processToast();}
+function processToast(){
+  if(!toastQ.length){toastBusy=false;return;}toastBusy=true;
+  const{id,title,msg,dur}=toastQ.shift();const t=el(id);
+  t.querySelector('strong').textContent=title;const sp=t.querySelector('span');if(sp)sp.textContent=msg;
+  t.classList.add('show');setTimeout(()=>{t.classList.remove('show');setTimeout(processToast,400);},dur||3000);
+}
+// ═══════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════
+function showTab(name){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  const panelEl=document.getElementById('panel-'+name);
+  if(panelEl)panelEl.classList.add('active');
+  const tabNames=['study','missions','test','overview','all','minigames'];
+  const idx=tabNames.indexOf(name);
+  if(idx>=0){const allTabs=document.querySelectorAll('.tab');if(allTabs[idx])allTabs[idx].classList.add('active');}
+  if(name==='missions')renderMissions();
+  if(name==='test')updateTestPanel();
+  if(name==='overview'){renderOverviewPanel();renderThemes();}
+  if(name==='all')renderAllCards();
+}
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+(function init(){
+  const g=getG();applyTheme(g.theme||'default');
+  // Add minigames tab
+  const tabsEl=document.querySelector('.tabs');
+  if(tabsEl){const btn=document.createElement('button');btn.className='tab';btn.setAttribute('onclick',"showTab('minigames')");btn.innerHTML='<span class="tab-icon">🎮</span>Juegos';tabsEl.appendChild(btn);}
+  buildSession();
+  if(sessionDeck.length===0){el('next-rev').textContent='✅ Sin cartas pendientes. ¡Vuelve más tarde!';['scene','btn-skip','dots','tap-hint'].forEach(id=>{const e=el(id);if(e)e.style.display='none';});updateStats();}
+  else{loadCard();}updateTestPanel();
+})();
+
+
+// ═══ MINIGAMES JS ═══
+function mgEl(id){return document.getElementById(id);}
+function mgShuf(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+function learnedCards(){return activeCards().filter(c=>getCS(c.id).status!=='new');}
+
+function openGame(g){
+  if(learnedCards().length<4){showToast('toast-unlock','⚠️ Pocas palabras','Aprende al menos 4 palabras para jugar.',2500);return;}
+  document.querySelectorAll('.mg-screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('mg-'+g+'-screen').classList.add('active');
+  if(g==='writing')startWriting();
+  else if(g==='memory')startMemory();
+  else if(g==='speed')resetSpeed();
+  else if(g==='phrase')startPhrase();
+  else if(g==='dictado')startDictado();
+}
+function closeGame(){
+  clearInterval(memTimer);clearInterval(speedTimer);
+  document.querySelectorAll('.mg-screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('mg-hub-screen').classList.add('active');
+}
+
+// ── ESCRITURA ──
+let wDiff='easy',wCards=[],wIdx=0,wCorrect=0,wWrong=0,wTotal=8;
+function setWDiff(d,btn){wDiff=d;document.querySelectorAll('#mg-writing-screen .diff-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');startWriting();}
+function startWriting(){
+  wCards=mgShuf(learnedCards());wIdx=0;wCorrect=0;wWrong=0;
+  wTotal=wDiff==='easy'?8:wDiff==='med'?12:16;
+  mgEl('w-gameover').style.display='none';mgEl('w-game-area').style.display='block';
+  wUpdate();loadWCard();
+}
+function wUpdate(){mgEl('w-correct').textContent=wCorrect;mgEl('w-wrong').textContent=wWrong;mgEl('w-total').textContent=wIdx+'/'+wTotal;}
+function loadWCard(){
+  if(wIdx>=wTotal){showWGameover();return;}
+  const card=wCards[wIdx%wCards.length];
+  // Show Spanish, write Korean hangul
+  mgEl('w-korean').textContent=card.spanish;
+  const hints={easy:'Pista: '+card.roman,med:'Categoría: '+card.cat,hard:'Sin pistas 💀'};
+  mgEl('w-hint').textContent=hints[wDiff]||'';
+  const inp=mgEl('w-input');inp.value='';inp.className='wg-input';
+  inp.placeholder='Escribe en coreano (hangul)…';inp.focus();
+  mgEl('w-feedback').textContent='';mgEl('w-feedback').className='wg-feedback';wUpdate();
+}
+function checkWriting(){
+  if(wIdx>=wTotal)return;
+  const card=wCards[wIdx%wCards.length];const inp=mgEl('w-input');
+  const val=inp.value.trim();const correct=card.korean.trim();
+  const ok=val===correct;
+  if(ok){inp.className='wg-input correct';mgEl('w-feedback').textContent='✓ ¡Correcto! '+card.korean;mgEl('w-feedback').className='wg-feedback ok';wCorrect++;}
+  else{inp.className='wg-input wrong';mgEl('w-feedback').textContent='✗ Era: '+card.korean+' ('+card.roman+')';mgEl('w-feedback').className='wg-feedback err';wWrong++;}
+  wIdx++;wUpdate();setTimeout(loadWCard,1200);
+}
+function skipWriting(){if(wIdx<wTotal){wIdx++;loadWCard();}}
+mgEl('w-input').addEventListener('keydown',e=>{if(e.key==='Enter')checkWriting();});
+function showWGameover(){
+  mgEl('w-game-area').style.display='none';mgEl('w-gameover').style.display='block';
+  const pct=wTotal>0?Math.round(wCorrect/wTotal*100):0;const xp=wCorrect*8;addXP(xp);
+  const emoji=pct>=90?'🏆':pct>=70?'⚔️':pct>=50?'💪':'📚';
+  const title=pct>=90?'¡Maestro escritor!':pct>=70?'¡Muy bien!':pct>=50?'¡Buen intento!':'¡Practica más!';
+  mgEl('w-go-emoji').textContent=emoji;mgEl('w-go-title').textContent=title;
+  mgEl('w-go-score').textContent=wCorrect+' / '+wTotal;mgEl('w-go-sub').textContent=pct+'% de precisión';mgEl('w-go-xp').textContent='+'+xp+' XP ⚡';
+}
+
+// ── MEMORIA ──
+let memPairs=4,memMatched=0,memTries=0,memFlipped=[],memTimer=null,memSeconds=0,memLock=false;
+function setMemDiff(n,btn){memPairs=n;document.querySelectorAll('#mg-memory-screen .diff-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');startMemory();}
+function startMemory(){
+  clearInterval(memTimer);memMatched=0;memTries=0;memSeconds=0;memFlipped=[];memLock=false;
+  mgEl('mem-gameover').style.display='none';
+  const lc=mgShuf(learnedCards()).slice(0,memPairs);
+  mgEl('mem-grid').className='mem-grid sz-'+(memPairs*2);
+  const items=[];
+  lc.forEach(c=>{items.push({id:c.id,side:'kr',text:c.korean,match:c.id});items.push({id:c.id+'_es',side:'es',text:c.spanish,match:c.id});});
+  const shuffledItems=mgShuf(items);const grid=mgEl('mem-grid');grid.innerHTML='';
+  shuffledItems.forEach(item=>{
+    const div=document.createElement('div');div.className='mem-card';div.dataset.match=item.match;
+    div.innerHTML='<div class="mem-face mem-front"></div><div class="mem-face mem-back '+(item.side==='kr'?'kr':'')+'">'+(item.text)+'</div>';
+    div.onclick=function(){flipMemCard(this,item.match);};grid.appendChild(div);
+  });
+  memUpdate();
+  memTimer=setInterval(()=>{memSeconds++;mgEl('mem-time').textContent=memSeconds+'s';},1000);
+}
+function flipMemCard(div,match){
+  if(memLock||div.classList.contains('flipped')||div.classList.contains('matched'))return;
+  div.classList.add('flipped');memFlipped.push({div,match});
+  if(memFlipped.length===2){
+    memTries++;memLock=true;
+    if(memFlipped[0].match===memFlipped[1].match){
+      memFlipped.forEach(f=>f.div.classList.add('matched'));memMatched++;memFlipped=[];memLock=false;memUpdate();
+      if(memMatched===memPairs)setTimeout(showMemGameover,500);
+    } else {setTimeout(()=>{memFlipped.forEach(f=>f.div.classList.remove('flipped'));memFlipped=[];memLock=false;},900);}
+    memUpdate();
+  }
+}
+function memUpdate(){mgEl('mem-pairs').textContent=memMatched+'/'+memPairs;mgEl('mem-tries').textContent=memTries;mgEl('mem-time').textContent=memSeconds+'s';}
+function showMemGameover(){
+  clearInterval(memTimer);const xp=Math.min(80,Math.max(20,60-memTries*2));addXP(xp);
+  mgEl('mem-gameover').style.display='block';
+  mgEl('mem-go-title').textContent=memTries<=memPairs+2?'¡Memoria perfecta!':'¡Completado!';
+  mgEl('mem-go-score').textContent=memSeconds+'s';mgEl('mem-go-sub').textContent=memTries+' intentos · '+memPairs+' pares';mgEl('mem-go-xp').textContent='+'+xp+' XP ⚡';
+}
+
+// ── VELOCIDAD ──
+let spCorrect=0,spWrong=0,spTimeLeft=60,speedTimer=null,spCards=[],spIdx=0,spAnswered=false;
+function resetSpeed(){
+  mgEl('sp-start-box').style.display='block';mgEl('sp-gameover').style.display='none';
+  mgEl('sp-opts').style.display='none';mgEl('sp-word-box').style.display='none';clearInterval(speedTimer);
+}
+function startSpeed(){
+  spCorrect=0;spWrong=0;spTimeLeft=60;spCards=mgShuf(learnedCards());spIdx=0;
+  mgEl('sp-start-box').style.display='none';mgEl('sp-gameover').style.display='none';
+  mgEl('sp-opts').style.display='grid';mgEl('sp-word-box').style.display='block';
+  mgEl('sp-correct').textContent=0;mgEl('sp-wrong').textContent=0;mgEl('sp-time').textContent=60;mgEl('sp-timer-fill').style.width='100%';
+  loadSpCard();
+  speedTimer=setInterval(()=>{spTimeLeft--;mgEl('sp-time').textContent=spTimeLeft;mgEl('sp-timer-fill').style.width=(spTimeLeft/60*100)+'%';if(spTimeLeft<=0){clearInterval(speedTimer);showSpGameover();}},1000);
+}
+function loadSpCard(){
+  const card=spCards[spIdx%spCards.length];spAnswered=false;
+  mgEl('sp-korean').textContent=card.korean;mgEl('sp-roman').textContent=card.roman;
+  const wrong=mgShuf(learnedCards().filter(c=>c.id!==card.id)).slice(0,3);
+  const opts=mgShuf([card,...wrong]);mgEl('sp-opts').innerHTML='';
+  opts.forEach(opt=>{
+    const btn=document.createElement('div');btn.className='sp-opt';btn.textContent=opt.spanish;
+    btn.onclick=function(){answerSpeed(this,opt.id===card.id,card);};mgEl('sp-opts').appendChild(btn);
+  });
+}
+function answerSpeed(btn,correct,card){
+  if(spAnswered)return;spAnswered=true;
+  if(correct){spCorrect++;btn.classList.add('correct');}
+  else{spWrong++;btn.classList.add('wrong');mgEl('sp-opts').querySelectorAll('.sp-opt').forEach(b=>{if(b.textContent===card.spanish)b.classList.add('correct');});}
+  mgEl('sp-correct').textContent=spCorrect;mgEl('sp-wrong').textContent=spWrong;
+  spIdx++;setTimeout(()=>{if(spTimeLeft>0)loadSpCard();},550);
+}
+function showSpGameover(){
+  mgEl('sp-opts').style.display='none';mgEl('sp-word-box').style.display='none';mgEl('sp-gameover').style.display='block';
+  const xp=spCorrect*5;addXP(xp);
+  const emoji=spCorrect>=20?'🏆':spCorrect>=12?'⚔️':spCorrect>=6?'💪':'📚';
+  mgEl('sp-go-emoji').textContent=emoji;mgEl('sp-go-score').textContent=spCorrect+' palabras';
+  mgEl('sp-go-sub').textContent=spWrong+' errores';mgEl('sp-go-xp').textContent='+'+xp+' XP ⚡';
+}
+
+// ── FRASES ──
+let pbCards=[],pbIdx=0,pbCorrect=0,pbWrong=0,pbTotal=8,pbSelected=[],pbCurrent=null;
+function startPhrase(){
+  const lc=learnedCards().filter(c=>c.example&&c.example.trim().length>2);
+  if(lc.length<3){showToast('toast-unlock','⚠️','Necesitas más palabras aprendidas.',2500);return;}
+  pbCards=mgShuf(lc);pbIdx=0;pbCorrect=0;pbWrong=0;
+  mgEl('pb-gameover').style.display='none';mgEl('pb-game-area').style.display='block';
+  mgEl('pb-correct').textContent=0;mgEl('pb-wrong').textContent=0;mgEl('pb-total').textContent='0/'+pbTotal;
+  loadPbCard();
+}
+function loadPbCard(){
+  if(pbIdx>=pbTotal){showPbGameover();return;}
+  pbCurrent=pbCards[pbIdx%pbCards.length];pbSelected=[];
+  mgEl('pb-translate').textContent='«'+pbCurrent.exTrans+'»';
+  const words=pbCurrent.example.replace(/[.?!]/g,'').split(' ').filter(w=>w.length>0);
+  pbCurrent._words=words;
+  const shuffled=mgShuf([...words]);
+  const target=mgEl('pb-target');target.innerHTML='<span class="pb-target-hint">Aquí aparecerá tu frase…</span>';
+  const bank=mgEl('pb-words');bank.innerHTML='';
+  shuffled.forEach((w,i)=>{
+    const btn=document.createElement('div');btn.className='pb-word';btn.textContent=w;btn.dataset.idx=i;
+    btn.onclick=function(){if(!this.classList.contains('used'))selectPbWord(this,w,i);};
+    bank.appendChild(btn);
+  });
+  mgEl('pb-feedback').textContent='';mgEl('pb-feedback').style.color='';
+  mgEl('pb-total').textContent=(pbIdx+1)+'/'+pbTotal;
+}
+function selectPbWord(btn,word,idx){
+  btn.classList.add('used');pbSelected.push({word,idx});
+  const target=mgEl('pb-target');
+  if(pbSelected.length===1)target.innerHTML='';
+  const slot=document.createElement('div');slot.className='pb-slot';slot.textContent=word;
+  slot.onclick=function(){
+    this.remove();pbSelected=pbSelected.filter(s=>s.idx!==idx);
+    const origBtn=document.querySelector('.pb-word[data-idx="'+idx+'"]');
+    if(origBtn)origBtn.classList.remove('used');
+    if(pbSelected.length===0)mgEl('pb-target').innerHTML='<span class="pb-target-hint">Aquí aparecerá tu frase…</span>';
+  };
+  target.appendChild(slot);
+}
+function checkPhrase(){
+  if(pbSelected.length===0){mgEl('pb-feedback').textContent='Selecciona palabras primero.';return;}
+  const user=pbSelected.map(s=>s.word).join(' ');const correct=pbCurrent._words.join(' ');
+  if(user===correct){mgEl('pb-feedback').textContent='✓ ¡Correcto! '+pbCurrent.example;mgEl('pb-feedback').style.color='var(--accent3)';pbCorrect++;}
+  else{mgEl('pb-feedback').textContent='✗ Era: '+pbCurrent.example;mgEl('pb-feedback').style.color='var(--danger)';pbWrong++;}
+  mgEl('pb-correct').textContent=pbCorrect;mgEl('pb-wrong').textContent=pbWrong;
+  pbIdx++;setTimeout(loadPbCard,1500);
+}
+function nextPhrase(){if(pbIdx<pbTotal){pbIdx++;loadPbCard();}}
+function showPbGameover(){
+  mgEl('pb-game-area').style.display='none';mgEl('pb-gameover').style.display='block';
+  const pct=Math.round(pbCorrect/pbTotal*100);const xp=pbCorrect*10;addXP(xp);
+  const emoji=pct>=90?'🏆':pct>=70?'⚔️':'📚';const title=pct>=90?'¡Gramático experto!':pct>=70?'¡Muy bien!':'¡Sigue practicando!';
+  mgEl('pb-go-emoji').textContent=emoji;mgEl('pb-go-title').textContent=title;
+  mgEl('pb-go-score').textContent=pbCorrect+' / '+pbTotal;mgEl('pb-go-sub').textContent=pct+'% de precisión';mgEl('pb-go-xp').textContent='+'+xp+' XP ⚡';
+}
+
+// ── DICTADO ──
+let dcCards=[],dcIdx=0,dcCorrect=0,dcWrong=0,dcTotal=10,dcCurrent=null,dcAnswered=false,dcTTSOk=false;
+function startDictado(){
+  dcTTSOk='speechSynthesis' in window;
+  mgEl('dc-no-tts').style.display=dcTTSOk?'none':'block';
+  mgEl('dc-game-area').style.display=dcTTSOk?'block':'none';
+  if(!dcTTSOk)return;
+  mgEl('dc-gameover').style.display='none';
+  const lc=learnedCards();if(lc.length<4)return;
+  dcCards=mgShuf(lc);dcIdx=0;dcCorrect=0;dcWrong=0;dcAnswered=false;
+  mgEl('dc-correct').textContent=0;mgEl('dc-wrong').textContent=0;mgEl('dc-total').textContent='0/'+dcTotal;
+  loadDcCard();
+}
+function loadDcCard(){
+  if(dcIdx>=dcTotal){showDcGameover();return;}
+  dcCurrent=dcCards[dcIdx%dcCards.length];dcAnswered=false;
+  mgEl('dc-feedback').textContent='';mgEl('dc-feedback').style.color='';mgEl('dc-speaker').classList.remove('playing');
+  const wrong=mgShuf(learnedCards().filter(c=>c.id!==dcCurrent.id)).slice(0,3);
+  const opts=mgShuf([dcCurrent,...wrong]);mgEl('dc-opts').innerHTML='';
+  opts.forEach(opt=>{
+    const btn=document.createElement('div');btn.className='dc-opt';btn.textContent=opt.korean;
+    btn.onclick=function(){answerDc(this,opt.id===dcCurrent.id);};mgEl('dc-opts').appendChild(btn);
+  });
+  mgEl('dc-total').textContent=(dcIdx+1)+'/'+dcTotal;
+  setTimeout(playDictado,500);
+}
+function playDictado(){
+  if(!dcTTSOk||!dcCurrent)return;speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(dcCurrent.korean);u.lang='ko-KR';u.rate=0.85;
+  mgEl('dc-speaker').classList.add('playing');u.onend=()=>mgEl('dc-speaker').classList.remove('playing');
+  speechSynthesis.speak(u);
+}
+function answerDc(btn,correct){
+  if(dcAnswered)return;dcAnswered=true;
+  if(correct){dcCorrect++;btn.classList.add('correct');mgEl('dc-feedback').textContent='✓ ¡Correcto!';mgEl('dc-feedback').style.color='var(--accent3)';}
+  else{dcWrong++;btn.classList.add('wrong');mgEl('dc-opts').querySelectorAll('.dc-opt').forEach(b=>{if(b.textContent===dcCurrent.korean)b.classList.add('correct');});mgEl('dc-feedback').textContent='✗ Era: '+dcCurrent.korean;mgEl('dc-feedback').style.color='var(--danger)';}
+  mgEl('dc-correct').textContent=dcCorrect;mgEl('dc-wrong').textContent=dcWrong;dcIdx++;setTimeout(loadDcCard,1100);
+}
+function showDcGameover(){
+  mgEl('dc-gameover').style.display='block';const pct=Math.round(dcCorrect/dcTotal*100);const xp=dcCorrect*8;addXP(xp);
+  const emoji=pct>=90?'🏆':pct>=70?'🎧':'📚';const title=pct>=90?'¡Oído perfecto!':pct>=70?'¡Muy buen oído!':'¡Sigue escuchando!';
+  mgEl('dc-go-emoji').textContent=emoji;mgEl('dc-go-title').textContent=title;
+  mgEl('dc-go-score').textContent=dcCorrect+' / '+dcTotal;mgEl('dc-go-sub').textContent=pct+'% de precisión';mgEl('dc-go-xp').textContent='+'+xp+' XP ⚡';
+}
+
+
+// ═══ EXPORT / IMPORT PROGRESS ═══
+function exportProgress(){
+  try{
+    const data=loadS();
+    const g=getG();
+    const blob=new Blob([JSON.stringify({data,game:g,version:1,date:new Date().toISOString()})],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    const dateStr=new Date().toISOString().slice(0,10);
+    a.href=url;a.download='korean_quest_'+dateStr+'.json';
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showSaveFeedback('✓ Progreso guardado correctamente','ok');
+    showToast('toast-unlock','💾 ¡Guardado!','Archivo .json descargado. Guárdalo en Google Drive o iCloud.',3000);
+  }catch(e){showSaveFeedback('✗ Error al guardar: '+e.message,'err');}
+}
+
+function importProgress(input){
+  const file=input.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const parsed=JSON.parse(e.target.result);
+      if(!parsed.data||!parsed.game){showSaveFeedback('✗ Archivo no válido','err');return;}
+      if(!confirm('¿Cargar este progreso? Se sobreescribirá el progreso actual.'))return;
+      localStorage.setItem(SK,JSON.stringify(parsed.data));
+      const d=loadS();d._game=parsed.game;saveS(d);
+      showSaveFeedback('✓ ¡Progreso cargado! Recargando…','ok');
+      setTimeout(()=>location.reload(),1200);
+    }catch(err){showSaveFeedback('✗ Error al cargar: '+err.message,'err');}
+  };
+  reader.readAsText(file);
+  input.value='';
+}
+
+function showSaveFeedback(msg,type){
+  const el2=document.getElementById('save-feedback');
+  if(!el2)return;
+  el2.textContent=msg;el2.className='save-feedback '+type;
+  setTimeout(()=>{el2.textContent='';el2.className='save-feedback';},4000);
+}
+
+// Auto-remind to save after each session
+const _origShowResults=window.showResults;
+
+</script>
+</body>
+</html>
